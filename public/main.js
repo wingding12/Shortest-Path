@@ -9,7 +9,7 @@ let highlightedPath = [];
 let interactionMode = "none"; // 'none' | 'addNode' | 'addEdge'
 let pendingEdgeSourceId = null;
 
-// Modal refs (used only for edge weight)
+// Modal refs (edge weight or node edit)
 const dialog = document.getElementById("dialog");
 const dialogTitle = document.getElementById("dialogTitle");
 const dialogFields = document.getElementById("dialogFields");
@@ -17,8 +17,9 @@ const dialogError = document.getElementById("dialogError");
 const dialogForm = document.getElementById("dialogForm");
 const dialogClose = document.getElementById("dialogClose");
 const dialogCancel = document.getElementById("dialogCancel");
-let dialogMode = null; // 'edgeWeight'
+let dialogMode = null; // 'edgeWeight' | 'editNode'
 let dialogEdgeContext = null; // { sourceId, targetId }
+let dialogNodeIndex = null; // index of node being edited
 
 // Buttons
 const addNodeBtn = document.getElementById("addNode");
@@ -32,6 +33,7 @@ function refreshModeUI() {
 function openEdgeWeightDialog({ sourceId, targetId }) {
   dialogMode = "edgeWeight";
   dialogEdgeContext = { sourceId, targetId };
+  dialogNodeIndex = null;
   dialogError.textContent = "";
   dialogFields.innerHTML = "";
   dialogTitle.textContent = "Set Edge Weight";
@@ -47,11 +49,32 @@ function openEdgeWeightDialog({ sourceId, targetId }) {
   dialog.setAttribute("aria-hidden", "false");
 }
 
+function openEditNodeDialog(nodeIndex) {
+  dialogMode = "editNode";
+  dialogNodeIndex = nodeIndex;
+  dialogEdgeContext = null;
+  dialogError.textContent = "";
+  dialogFields.innerHTML = "";
+  const n = nodes[nodeIndex];
+  dialogTitle.textContent = `Edit Node (${n.id})`;
+  dialogFields.insertAdjacentHTML(
+    "beforeend",
+    [
+      `<label>Node ID<input id="field_node_id" type="text" value="${n.id}" /></label>`,
+      `<label>X<input id="field_node_x" type="number" value="${n.x}" /></label>`,
+      `<label>Y<input id="field_node_y" type="number" value="${n.y}" /></label>`,
+    ].join("")
+  );
+  dialog.classList.remove("hidden");
+  dialog.setAttribute("aria-hidden", "false");
+}
+
 function closeDialog() {
   dialog.classList.add("hidden");
   dialog.setAttribute("aria-hidden", "true");
   dialogMode = null;
   dialogEdgeContext = null;
+  dialogNodeIndex = null;
 }
 
 dialogClose.addEventListener("click", closeDialog);
@@ -75,6 +98,48 @@ dialogForm.addEventListener("submit", (e) => {
     closeDialog();
     // Keep addEdge mode for chaining; reset pending source
     pendingEdgeSourceId = null;
+    redraw();
+  } else if (dialogMode === "editNode" && dialogNodeIndex !== null) {
+    const oldId = nodes[dialogNodeIndex].id;
+    const newId = document.getElementById("field_node_id").value.trim();
+    const newX = Number(document.getElementById("field_node_x").value);
+    const newY = Number(document.getElementById("field_node_y").value);
+    if (!newId) {
+      dialogError.textContent = "Node ID is required";
+      return;
+    }
+    if (Number.isNaN(newX) || Number.isNaN(newY)) {
+      dialogError.textContent = "X and Y must be numbers";
+      return;
+    }
+    if (
+      newId !== oldId &&
+      nodes.some((n, i) => i !== dialogNodeIndex && n.id === newId)
+    ) {
+      dialogError.textContent = "Duplicate node ID";
+      return;
+    }
+    // Apply updates
+    nodes[dialogNodeIndex].id = newId;
+    nodes[dialogNodeIndex].x = newX;
+    nodes[dialogNodeIndex].y = newY;
+    // Update edges if ID changed
+    if (newId !== oldId) {
+      for (const e of edges) {
+        if (e.source === oldId) e.source = newId;
+        if (e.target === oldId) e.target = newId;
+      }
+      // Update source/target inputs if matching
+      const sourceInput = document.getElementById("sourceId");
+      const targetInput = document.getElementById("targetId");
+      if (sourceInput.value === oldId) sourceInput.value = newId;
+      if (targetInput.value === oldId) targetInput.value = newId;
+      // If edge selection pending
+      if (pendingEdgeSourceId === oldId) pendingEdgeSourceId = newId;
+      // Clear highlighted path to avoid stale IDs
+      highlightedPath = [];
+    }
+    closeDialog();
     redraw();
   }
 });
@@ -125,6 +190,15 @@ canvas.addEventListener("click", (evt) => {
       redraw();
     } else if (pendingEdgeSourceId && hit.id !== pendingEdgeSourceId) {
       openEdgeWeightDialog({ sourceId: pendingEdgeSourceId, targetId: hit.id });
+    }
+    return;
+  }
+  // Neutral mode: click on node to edit
+  if (interactionMode === "none") {
+    const hit = findNodeAt(x, y);
+    if (hit) {
+      const idx = nodes.indexOf(hit);
+      if (idx !== -1) openEditNodeDialog(idx);
     }
   }
 });
