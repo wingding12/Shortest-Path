@@ -131,3 +131,9 @@ label {
   min-height: 18px;
   font-size: 13px;
 }
+
+/* Active mode highlight */
+button.mode-active {
+  background: #2563eb;
+  border-color: #1d4ed8;
+}

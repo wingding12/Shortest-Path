@@ -20,6 +20,15 @@ const dialogCancel = document.getElementById("dialogCancel");
 let dialogMode = null; // 'edgeWeight'
 let dialogEdgeContext = null; // { sourceId, targetId }
 
+// Buttons
+const addNodeBtn = document.getElementById("addNode");
+const addEdgeBtn = document.getElementById("addEdge");
+
+function refreshModeUI() {
+  addNodeBtn.classList.toggle("mode-active", interactionMode === "addNode");
+  addEdgeBtn.classList.toggle("mode-active", interactionMode === "addEdge");
+}
+
 function openEdgeWeightDialog({ sourceId, targetId }) {
   dialogMode = "edgeWeight";
   dialogEdgeContext = { sourceId, targetId };
@@ -213,9 +222,6 @@ function showResults(obj) {
 }
 
 // Wire buttons (toggle modes)
-const addNodeBtn = document.getElementById("addNode");
-const addEdgeBtn = document.getElementById("addEdge");
-
 addNodeBtn.addEventListener("click", () => {
   if (interactionMode === "addNode") {
     interactionMode = "none";
@@ -223,6 +229,7 @@ addNodeBtn.addEventListener("click", () => {
     interactionMode = "addNode";
     pendingEdgeSourceId = null;
   }
+  refreshModeUI();
 });
 
 addEdgeBtn.addEventListener("click", () => {
@@ -233,6 +240,7 @@ addEdgeBtn.addEventListener("click", () => {
     interactionMode = "addEdge";
     pendingEdgeSourceId = null;
   }
+  refreshModeUI();
   redraw();
 });
 
@@ -242,6 +250,7 @@ document.getElementById("clearGraph").addEventListener("click", () => {
   highlightedPath = [];
   pendingEdgeSourceId = null;
   interactionMode = "none";
+  refreshModeUI();
   redraw();
 });
 
@@ -301,4 +310,5 @@ document.getElementById("runCompare").addEventListener("click", async () => {
   }
 });
 
+refreshModeUI();
 redraw();
