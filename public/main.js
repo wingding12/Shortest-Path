@@ -176,14 +176,10 @@ function findNodeAt(x, y) {
 
 canvas.addEventListener("click", (evt) => {
   const { x, y } = canvasToCoords(evt);
-  if (interactionMode === "addNode") {
-    const id = generateNextNodeId();
-    nodes.push({ id, x, y });
-    redraw();
-    return;
-  }
+  const hit = findNodeAt(x, y);
+
+  // Edge creation mode takes precedence
   if (interactionMode === "addEdge") {
-    const hit = findNodeAt(x, y);
     if (!hit) return;
     if (!pendingEdgeSourceId) {
       pendingEdgeSourceId = hit.id;
@@ -193,13 +189,20 @@ canvas.addEventListener("click", (evt) => {
     }
     return;
   }
-  // Neutral mode: click on node to edit
-  if (interactionMode === "none") {
-    const hit = findNodeAt(x, y);
-    if (hit) {
-      const idx = nodes.indexOf(hit);
-      if (idx !== -1) openEditNodeDialog(idx);
-    }
+
+  // If clicked on an existing node, open editor regardless of addNode/none
+  if (hit) {
+    const idx = nodes.indexOf(hit);
+    if (idx !== -1) openEditNodeDialog(idx);
+    return;
+  }
+
+  // Otherwise, if in addNode mode and clicked empty space, add a node
+  if (interactionMode === "addNode") {
+    const id = generateNextNodeId();
+    nodes.push({ id, x, y });
+    redraw();
+    return;
   }
 });
 
