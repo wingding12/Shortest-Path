@@ -3,6 +3,98 @@ const ctx = canvas.getContext("2d");
 
 const nodes = [];
 const edges = [];
+let highlightedPath = [];
+
+// Modal refs
+const dialog = document.getElementById("dialog");
+const dialogTitle = document.getElementById("dialogTitle");
+const dialogFields = document.getElementById("dialogFields");
+const dialogError = document.getElementById("dialogError");
+const dialogForm = document.getElementById("dialogForm");
+const dialogClose = document.getElementById("dialogClose");
+const dialogCancel = document.getElementById("dialogCancel");
+let dialogMode = null; // 'node' | 'edge'
+
+function openDialog(mode) {
+  dialogMode = mode;
+  dialogError.textContent = "";
+  dialogFields.innerHTML = "";
+  if (mode === "node") {
+    dialogTitle.textContent = "Add Node";
+    dialogFields.insertAdjacentHTML(
+      "beforeend",
+      [
+        '<label>Node ID<input id="field_node_id" type="text" placeholder="e.g. A" /></label>',
+        '<label>X<input id="field_node_x" type="number" min="0" max="800" value="100" /></label>',
+        '<label>Y<input id="field_node_y" type="number" min="0" max="500" value="100" /></label>',
+      ].join("")
+    );
+  } else if (mode === "edge") {
+    dialogTitle.textContent = "Add Edge";
+    const nodeOptions = nodes
+      .map((n) => `<option value="${n.id}">${n.id}</option>`)
+      .join("");
+    dialogFields.insertAdjacentHTML(
+      "beforeend",
+      [
+        `<label>Source<select id="field_edge_source">${nodeOptions}</select></label>`,
+        `<label>Target<select id="field_edge_target">${nodeOptions}</select></label>`,
+        '<label>Weight<input id="field_edge_weight" type="number" value="1" /></label>',
+      ].join("")
+    );
+  }
+  dialog.classList.remove("hidden");
+  dialog.setAttribute("aria-hidden", "false");
+}
+
+function closeDialog() {
+  dialog.classList.add("hidden");
+  dialog.setAttribute("aria-hidden", "true");
+  dialogMode = null;
+}
+
+dialogClose.addEventListener("click", closeDialog);
+
+dialogCancel.addEventListener("click", (e) => {
+  e.preventDefault();
+  closeDialog();
+});
+
+dialogForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  dialogError.textContent = "";
+  if (dialogMode === "node") {
+    const id = document.getElementById("field_node_id").value.trim();
+    const x = Number(document.getElementById("field_node_x").value);
+    const y = Number(document.getElementById("field_node_y").value);
+    if (!id) return (dialogError.textContent = "Node ID is required");
+    if (Number.isNaN(x) || Number.isNaN(y))
+      return (dialogError.textContent = "X and Y must be numbers");
+    if (nodes.some((n) => n.id === id))
+      return (dialogError.textContent = "Duplicate node ID");
+    nodes.push({ id, x, y });
+    closeDialog();
+    redraw();
+  } else if (dialogMode === "edge") {
+    if (nodes.length < 2)
+      return (dialogError.textContent = "Create at least two nodes first");
+    const source = document.getElementById("field_edge_source").value;
+    const target = document.getElementById("field_edge_target").value;
+    const weight = Number(document.getElementById("field_edge_weight").value);
+    if (!source || !target)
+      return (dialogError.textContent = "Select source and target");
+    if (Number.isNaN(weight))
+      return (dialogError.textContent = "Weight must be a number");
+    if (
+      !nodes.some((n) => n.id === source) ||
+      !nodes.some((n) => n.id === target)
+    )
+      return (dialogError.textContent = "Unknown node id");
+    edges.push({ source, target, weight });
+    closeDialog();
+    redraw();
+  }
+});
 
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -23,6 +115,20 @@ function redraw() {
     ctx.fillStyle = "#111827";
     ctx.fillText(String(e.weight), mx + 4, my - 4);
   });
+  // Highlight shortest path
+  if (highlightedPath.length > 1) {
+    ctx.strokeStyle = "#10b981";
+    ctx.lineWidth = 4;
+    for (let i = 0; i < highlightedPath.length - 1; i++) {
+      const a = nodes.find((n) => n.id === highlightedPath[i]);
+      const b = nodes.find((n) => n.id === highlightedPath[i + 1]);
+      if (!a || !b) continue;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+  }
   // Draw nodes
   nodes.forEach((n) => {
     ctx.beginPath();
@@ -54,42 +160,6 @@ function dumpState() {
   );
 }
 
-function promptNode() {
-  const id = prompt("Node id (string):");
-  if (!id) return;
-  const x = Number(prompt("x (0-800):", "100"));
-  const y = Number(prompt("y (0-500):", "100"));
-  if (Number.isNaN(x) || Number.isNaN(y)) return;
-  if (nodes.some((n) => n.id === id)) {
-    alert("Duplicate id");
-    return;
-  }
-  nodes.push({ id, x, y });
-  redraw();
-}
-
-function promptEdge() {
-  if (nodes.length < 2) {
-    alert("Need at least 2 nodes");
-    return;
-  }
-  const source = prompt("Edge source id:");
-  const target = prompt("Edge target id:");
-  const weight = Number(
-    prompt("Weight (number, allow negative for Bellman-Ford):", "1")
-  );
-  if (!source || !target || Number.isNaN(weight)) return;
-  if (
-    !nodes.some((n) => n.id === source) ||
-    !nodes.some((n) => n.id === target)
-  ) {
-    alert("Unknown node id");
-    return;
-  }
-  edges.push({ source, target, weight });
-  redraw();
-}
-
 function getPayload() {
   const sourceId = document.getElementById("sourceId").value || undefined;
   const targetId = document.getElementById("targetId").value || undefined;
@@ -112,13 +182,18 @@ function showResults(obj) {
 
 // Wire buttons
 
-document.getElementById("addNode").addEventListener("click", promptNode);
+document
+  .getElementById("addNode")
+  .addEventListener("click", () => openDialog("node"));
 
-document.getElementById("addEdge").addEventListener("click", promptEdge);
+document
+  .getElementById("addEdge")
+  .addEventListener("click", () => openDialog("edge"));
 
 document.getElementById("clearGraph").addEventListener("click", () => {
   nodes.length = 0;
   edges.length = 0;
+  highlightedPath = [];
   redraw();
 });
 
@@ -130,7 +205,9 @@ document.getElementById("runDijkstra").addEventListener("click", async () => {
       return;
     }
     const result = await postJSON("/api/shortest-path/dijkstra", payload);
+    highlightedPath = result.path || [];
     showResults({ algorithm: "Dijkstra", result });
+    redraw();
   } catch (e) {
     showResults({ error: String(e) });
   }
@@ -146,7 +223,9 @@ document
         return;
       }
       const result = await postJSON("/api/shortest-path/bellman-ford", payload);
+      highlightedPath = result.path || [];
       showResults({ algorithm: "Bellman-Ford", result });
+      redraw();
     } catch (e) {
       showResults({ error: String(e) });
     }
@@ -160,7 +239,15 @@ document.getElementById("runCompare").addEventListener("click", async () => {
       return;
     }
     const result = await postJSON("/api/shortest-path/compare", payload);
+    // Prefer Dijkstra path if present, else Bellman-Ford
+    highlightedPath =
+      result.dijkstra && result.dijkstra.path
+        ? result.dijkstra.path
+        : result.bellmanFord
+        ? result.bellmanFord.path
+        : [];
     showResults({ algorithm: "Compare", result });
+    redraw();
   } catch (e) {
     showResults({ error: String(e) });
   }

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shortest Path Comparator</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="main.js" defer></script>
   </head>
   <body>
     <header>
@@ -41,6 +42,30 @@
         </aside>
       </section>
     </main>
-    <script src="main.js"></script>
+
+    <!-- Mini dialog for adding nodes and edges -->
+    <div id="dialog" class="modal hidden" aria-hidden="true">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialogTitle"
+      >
+        <div class="modal-header">
+          <h2 id="dialogTitle">Add</h2>
+          <button id="dialogClose" class="icon-btn" aria-label="Close">
+            ✕
+          </button>
+        </div>
+        <form id="dialogForm">
+          <div id="dialogFields" class="modal-fields"></div>
+          <div id="dialogError" class="modal-error" aria-live="polite"></div>
+          <div class="modal-actions">
+            <button type="button" id="dialogCancel">Cancel</button>
+            <button type="submit" id="dialogSubmit">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </body>
 </html>

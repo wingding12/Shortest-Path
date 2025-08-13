@@ -66,3 +66,68 @@ label {
   gap: 6px;
   align-items: center;
 }
+
+/* Modal styles */
+.modal.hidden {
+  display: none;
+}
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+}
+.modal-card {
+  width: 360px;
+  max-width: 95vw;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 18px;
+  cursor: pointer;
+}
+.modal-fields {
+  padding: 12px 14px;
+  display: grid;
+  gap: 10px;
+}
+.modal-fields label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+.modal-fields input {
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid #f3f4f6;
+}
+.modal-error {
+  color: #dc2626;
+  padding: 0 14px 10px 14px;
+  min-height: 18px;
+  font-size: 13px;
+}
