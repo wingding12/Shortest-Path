@@ -321,6 +321,85 @@ nodesListEl.addEventListener("click", (e) => {
   openEditNodeDialog(idx);
 });
 
+// Samples
+function loadSample(sampleIndex) {
+  nodes.length = 0;
+  edges.length = 0;
+  highlightedPath = [];
+  pendingEdgeSourceId = null;
+  interactionMode = "none";
+
+  if (sampleIndex === 1) {
+    nodes.push(
+      { id: "A", x: 120, y: 120 },
+      { id: "B", x: 320, y: 100 },
+      { id: "C", x: 540, y: 140 },
+      { id: "D", x: 220, y: 300 },
+      { id: "E", x: 460, y: 300 }
+    );
+    edges.push(
+      { source: "A", target: "B", weight: 2 },
+      { source: "A", target: "D", weight: 5 },
+      { source: "B", target: "C", weight: 4 },
+      { source: "D", target: "E", weight: 1 },
+      { source: "B", target: "E", weight: 7 },
+      { source: "E", target: "C", weight: 1 }
+    );
+    document.getElementById("sourceId").value = "A";
+    document.getElementById("targetId").value = "C";
+  } else if (sampleIndex === 2) {
+    nodes.push(
+      { id: "S", x: 100, y: 250 },
+      { id: "T", x: 700, y: 250 },
+      { id: "U", x: 250, y: 100 },
+      { id: "V", x: 400, y: 250 },
+      { id: "W", x: 550, y: 100 }
+    );
+    edges.push(
+      { source: "S", target: "U", weight: 1 },
+      { source: "U", target: "V", weight: 1 },
+      { source: "V", target: "W", weight: 1 },
+      { source: "W", target: "T", weight: 1 },
+      { source: "S", target: "V", weight: 4 },
+      { source: "U", target: "W", weight: 3 },
+      { source: "V", target: "T", weight: 2 }
+    );
+    document.getElementById("sourceId").value = "S";
+    document.getElementById("targetId").value = "T";
+  } else if (sampleIndex === 3) {
+    nodes.push(
+      { id: "1", x: 120, y: 120 },
+      { id: "2", x: 240, y: 240 },
+      { id: "3", x: 360, y: 120 },
+      { id: "4", x: 480, y: 240 },
+      { id: "5", x: 600, y: 120 }
+    );
+    edges.push(
+      { source: "1", target: "2", weight: 2 },
+      { source: "2", target: "3", weight: -1 },
+      { source: "3", target: "4", weight: 2 },
+      { source: "4", target: "5", weight: 2 },
+      { source: "1", target: "3", weight: 4 },
+      { source: "2", target: "4", weight: 1 }
+    );
+    document.getElementById("sourceId").value = "1";
+    document.getElementById("targetId").value = "5";
+  }
+
+  refreshModeUI();
+  redraw();
+}
+
+document
+  .getElementById("loadSample1")
+  .addEventListener("click", () => loadSample(1));
+document
+  .getElementById("loadSample2")
+  .addEventListener("click", () => loadSample(2));
+document
+  .getElementById("loadSample3")
+  .addEventListener("click", () => loadSample(3));
+
 // Wire buttons (toggle modes)
 addNodeBtn.addEventListener("click", () => {
   if (interactionMode === "addNode") {
