@@ -266,11 +266,10 @@ function redraw() {
 }
 
 function dumpState() {
-  document.getElementById("nodesOut").textContent = JSON.stringify(
-    nodes,
-    null,
-    2
-  );
+  // Nodes: show as a simple list of IDs
+  const nodesOut = document.getElementById("nodesOut");
+  nodesOut.innerHTML = nodes.map((n) => `<li>${n.id}</li>`).join("");
+  // Edges: keep JSON for now
   document.getElementById("edgesOut").textContent = JSON.stringify(
     edges,
     null,

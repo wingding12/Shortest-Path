@@ -137,3 +137,20 @@ button.mode-active {
   background: #2563eb;
   border-color: #1d4ed8;
 }
+
+/* List styling */
+ul.list {
+  list-style: none;
+  padding: 6px;
+  margin: 0;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+ul.list li {
+  padding: 6px 8px;
+  border-bottom: 1px dashed #e5e7eb;
+}
+ul.list li:last-child {
+  border-bottom: none;
+}
