@@ -268,7 +268,9 @@ function redraw() {
 function dumpState() {
   // Nodes: show as a simple list of IDs
   const nodesOut = document.getElementById("nodesOut");
-  nodesOut.innerHTML = nodes.map((n) => `<li>${n.id}</li>`).join("");
+  nodesOut.innerHTML = nodes
+    .map((n) => `<li data-node-id="${n.id}">${n.id}</li>`)
+    .join("");
   // Edges: keep JSON for now
   document.getElementById("edgesOut").textContent = JSON.stringify(
     edges,
@@ -296,6 +298,28 @@ async function postJSON(path, body) {
 function showResults(obj) {
   document.getElementById("results").textContent = JSON.stringify(obj, null, 2);
 }
+
+// Wire list click: show data and open edit
+const nodesListEl = document.getElementById("nodesOut");
+nodesListEl.addEventListener("click", (e) => {
+  const li = e.target.closest("li[data-node-id]");
+  if (!li) return;
+  const nodeId = li.getAttribute("data-node-id");
+  const idx = nodes.findIndex((n) => n.id === nodeId);
+  if (idx === -1) return;
+  const node = nodes[idx];
+  const incidentEdges = edges.filter(
+    (ed) => ed.source === nodeId || ed.target === nodeId
+  );
+  showResults({
+    selection: {
+      type: "node",
+      node: { id: node.id, x: node.x, y: node.y },
+      incidentEdges,
+    },
+  });
+  openEditNodeDialog(idx);
+});
 
 // Wire buttons (toggle modes)
 addNodeBtn.addEventListener("click", () => {
