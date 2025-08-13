@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shortest Path Comparator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Shortest Path Comparator</h1>
+    </header>
+    <main>
+      <section class="controls">
+        <div class="row">
+          <label
+            >Source ID <input id="sourceId" type="text" placeholder="e.g. A"
+          /></label>
+          <label
+            >Target ID <input id="targetId" type="text" placeholder="optional"
+          /></label>
+          <button id="runDijkstra">Run Dijkstra</button>
+          <button id="runBellmanFord">Run Bellman-Ford</button>
+          <button id="runCompare">Compare</button>
+          <button id="clearGraph">Clear</button>
+        </div>
+        <div class="row">
+          <button id="addNode">Add Node</button>
+          <button id="addEdge">Add Edge</button>
+        </div>
+      </section>
+      <section class="workspace">
+        <canvas id="canvas" width="800" height="500"></canvas>
+        <aside class="panel">
+          <h3>Nodes</h3>
+          <pre id="nodesOut"></pre>
+          <h3>Edges</h3>
+          <pre id="edgesOut"></pre>
+          <h3>Results</h3>
+          <pre id="results"></pre>
+        </aside>
+      </section>
+    </main>
+    <script src="main.js"></script>
+  </body>
+</html>
