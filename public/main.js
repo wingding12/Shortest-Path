@@ -5,7 +5,11 @@ const nodes = [];
 const edges = [];
 let highlightedPath = [];
 
-// Modal refs
+// Interaction state
+let interactionMode = "none"; // 'none' | 'addNode' | 'addEdge'
+let pendingEdgeSourceId = null;
+
+// Modal refs (used only for edge weight)
 const dialog = document.getElementById("dialog");
 const dialogTitle = document.getElementById("dialogTitle");
 const dialogFields = document.getElementById("dialogFields");
@@ -13,36 +17,23 @@ const dialogError = document.getElementById("dialogError");
 const dialogForm = document.getElementById("dialogForm");
 const dialogClose = document.getElementById("dialogClose");
 const dialogCancel = document.getElementById("dialogCancel");
-let dialogMode = null; // 'node' | 'edge'
+let dialogMode = null; // 'edgeWeight'
+let dialogEdgeContext = null; // { sourceId, targetId }
 
-function openDialog(mode) {
-  dialogMode = mode;
+function openEdgeWeightDialog({ sourceId, targetId }) {
+  dialogMode = "edgeWeight";
+  dialogEdgeContext = { sourceId, targetId };
   dialogError.textContent = "";
   dialogFields.innerHTML = "";
-  if (mode === "node") {
-    dialogTitle.textContent = "Add Node";
-    dialogFields.insertAdjacentHTML(
-      "beforeend",
-      [
-        '<label>Node ID<input id="field_node_id" type="text" placeholder="e.g. A" /></label>',
-        '<label>X<input id="field_node_x" type="number" min="0" max="800" value="100" /></label>',
-        '<label>Y<input id="field_node_y" type="number" min="0" max="500" value="100" /></label>',
-      ].join("")
-    );
-  } else if (mode === "edge") {
-    dialogTitle.textContent = "Add Edge";
-    const nodeOptions = nodes
-      .map((n) => `<option value="${n.id}">${n.id}</option>`)
-      .join("");
-    dialogFields.insertAdjacentHTML(
-      "beforeend",
-      [
-        `<label>Source<select id="field_edge_source">${nodeOptions}</select></label>`,
-        `<label>Target<select id="field_edge_target">${nodeOptions}</select></label>`,
-        '<label>Weight<input id="field_edge_weight" type="number" value="1" /></label>',
-      ].join("")
-    );
-  }
+  dialogTitle.textContent = "Set Edge Weight";
+  dialogFields.insertAdjacentHTML(
+    "beforeend",
+    [
+      `<div>Source: <strong>${sourceId}</strong></div>`,
+      `<div>Target: <strong>${targetId}</strong></div>`,
+      '<label>Weight<input id="field_edge_weight" type="number" value="1" /></label>',
+    ].join("")
+  );
   dialog.classList.remove("hidden");
   dialog.setAttribute("aria-hidden", "false");
 }
@@ -51,6 +42,7 @@ function closeDialog() {
   dialog.classList.add("hidden");
   dialog.setAttribute("aria-hidden", "true");
   dialogMode = null;
+  dialogEdgeContext = null;
 }
 
 dialogClose.addEventListener("click", closeDialog);
@@ -63,36 +55,68 @@ dialogCancel.addEventListener("click", (e) => {
 dialogForm.addEventListener("submit", (e) => {
   e.preventDefault();
   dialogError.textContent = "";
-  if (dialogMode === "node") {
-    const id = document.getElementById("field_node_id").value.trim();
-    const x = Number(document.getElementById("field_node_x").value);
-    const y = Number(document.getElementById("field_node_y").value);
-    if (!id) return (dialogError.textContent = "Node ID is required");
-    if (Number.isNaN(x) || Number.isNaN(y))
-      return (dialogError.textContent = "X and Y must be numbers");
-    if (nodes.some((n) => n.id === id))
-      return (dialogError.textContent = "Duplicate node ID");
-    nodes.push({ id, x, y });
-    closeDialog();
-    redraw();
-  } else if (dialogMode === "edge") {
-    if (nodes.length < 2)
-      return (dialogError.textContent = "Create at least two nodes first");
-    const source = document.getElementById("field_edge_source").value;
-    const target = document.getElementById("field_edge_target").value;
+  if (dialogMode === "edgeWeight" && dialogEdgeContext) {
     const weight = Number(document.getElementById("field_edge_weight").value);
-    if (!source || !target)
-      return (dialogError.textContent = "Select source and target");
-    if (Number.isNaN(weight))
-      return (dialogError.textContent = "Weight must be a number");
-    if (
-      !nodes.some((n) => n.id === source) ||
-      !nodes.some((n) => n.id === target)
-    )
-      return (dialogError.textContent = "Unknown node id");
-    edges.push({ source, target, weight });
+    if (Number.isNaN(weight)) {
+      dialogError.textContent = "Weight must be a number";
+      return;
+    }
+    const { sourceId, targetId } = dialogEdgeContext;
+    edges.push({ source: sourceId, target: targetId, weight });
     closeDialog();
+    // Keep addEdge mode for chaining; reset pending source
+    pendingEdgeSourceId = null;
     redraw();
+  }
+});
+
+function generateNextNodeId() {
+  // Generate IDs N1, N2, ... avoiding collisions
+  let i = nodes.length + 1;
+  while (true) {
+    const candidate = `N${i}`;
+    if (!nodes.some((n) => n.id === candidate)) return candidate;
+    i++;
+  }
+}
+
+function canvasToCoords(evt) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (evt.clientX - rect.left) * scaleX,
+    y: (evt.clientY - rect.top) * scaleY,
+  };
+}
+
+function findNodeAt(x, y) {
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const n = nodes[i];
+    const dx = x - n.x;
+    const dy = y - n.y;
+    if (Math.hypot(dx, dy) <= 18) return n;
+  }
+  return null;
+}
+
+canvas.addEventListener("click", (evt) => {
+  const { x, y } = canvasToCoords(evt);
+  if (interactionMode === "addNode") {
+    const id = generateNextNodeId();
+    nodes.push({ id, x, y });
+    redraw();
+    return;
+  }
+  if (interactionMode === "addEdge") {
+    const hit = findNodeAt(x, y);
+    if (!hit) return;
+    if (!pendingEdgeSourceId) {
+      pendingEdgeSourceId = hit.id;
+      redraw();
+    } else if (pendingEdgeSourceId && hit.id !== pendingEdgeSourceId) {
+      openEdgeWeightDialog({ sourceId: pendingEdgeSourceId, targetId: hit.id });
+    }
   }
 });
 
@@ -143,6 +167,14 @@ function redraw() {
     ctx.textBaseline = "middle";
     ctx.font = "bold 12px system-ui";
     ctx.fillText(n.id, n.x, n.y);
+    // Edge mode: highlight selected source node
+    if (interactionMode === "addEdge" && pendingEdgeSourceId === n.id) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 22, 0, Math.PI * 2);
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
   });
   dumpState();
 }
@@ -180,20 +212,36 @@ function showResults(obj) {
   document.getElementById("results").textContent = JSON.stringify(obj, null, 2);
 }
 
-// Wire buttons
+// Wire buttons (toggle modes)
+const addNodeBtn = document.getElementById("addNode");
+const addEdgeBtn = document.getElementById("addEdge");
 
-document
-  .getElementById("addNode")
-  .addEventListener("click", () => openDialog("node"));
+addNodeBtn.addEventListener("click", () => {
+  if (interactionMode === "addNode") {
+    interactionMode = "none";
+  } else {
+    interactionMode = "addNode";
+    pendingEdgeSourceId = null;
+  }
+});
 
-document
-  .getElementById("addEdge")
-  .addEventListener("click", () => openDialog("edge"));
+addEdgeBtn.addEventListener("click", () => {
+  if (interactionMode === "addEdge") {
+    interactionMode = "none";
+    pendingEdgeSourceId = null;
+  } else {
+    interactionMode = "addEdge";
+    pendingEdgeSourceId = null;
+  }
+  redraw();
+});
 
 document.getElementById("clearGraph").addEventListener("click", () => {
   nodes.length = 0;
   edges.length = 0;
   highlightedPath = [];
+  pendingEdgeSourceId = null;
+  interactionMode = "none";
   redraw();
 });
 
