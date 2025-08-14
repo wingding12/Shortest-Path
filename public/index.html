@@ -13,27 +13,41 @@
     </header>
     <main>
       <section class="controls">
-        <div class="row">
-          <label
-            >Source ID <input id="sourceId" type="text" placeholder="e.g. A"
-          /></label>
-          <label
-            >Target ID <input id="targetId" type="text" placeholder="optional"
-          /></label>
-          <button id="runDijkstra">Run Dijkstra</button>
-          <button id="runBellmanFord">Run Bellman-Ford</button>
-          <button id="runCompare">Compare</button>
-          <button id="clearGraph">Clear</button>
+        <div class="control-group">
+          <div class="group-title">Source / Target</div>
+          <div class="row">
+            <label
+              >Source ID <input id="sourceId" type="text" placeholder="e.g. A"
+            /></label>
+            <label
+              >Target ID
+              <input id="targetId" type="text" placeholder="optional"
+            /></label>
+          </div>
         </div>
-        <div class="row">
-          <button id="addNode">Add Node</button>
-          <button id="addEdge">Add Edge</button>
+        <div class="control-group">
+          <div class="group-title">Graph Editing</div>
+          <div class="row">
+            <button id="addNode">Add Node</button>
+            <button id="addEdge">Add Edge</button>
+            <button id="clearGraph">Clear</button>
+          </div>
         </div>
-        <div class="row">
-          <span>Samples:</span>
-          <button id="loadSample1">Load Sample 1</button>
-          <button id="loadSample2">Load Sample 2</button>
-          <button id="loadSample3">Load Sample 3</button>
+        <div class="control-group">
+          <div class="group-title">Run Algorithms</div>
+          <div class="row">
+            <button id="runDijkstra">Run Dijkstra</button>
+            <button id="runBellmanFord">Run Bellman-Ford</button>
+            <button id="runCompare">Compare</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="group-title">Samples</div>
+          <div class="row">
+            <button id="loadSample1">Load Sample 1</button>
+            <button id="loadSample2">Load Sample 2</button>
+            <button id="loadSample3">Load Sample 3</button>
+          </div>
         </div>
       </section>
       <section class="workspace">

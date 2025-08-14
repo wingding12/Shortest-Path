@@ -25,6 +25,20 @@ main {
 .controls input {
   padding: 6px 8px;
 }
+.controls .control-group {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+.controls .group-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: 1fr 320px;
