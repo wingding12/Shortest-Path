@@ -42,6 +42,18 @@
           </div>
         </div>
       </section>
+
+      <!-- Algorithm Comparison dock directly below controls, above the graph -->
+      <section id="compareDock" class="compare-dock hidden" aria-hidden="true">
+        <div class="compare-dock-header">
+          <h2>Algorithm Comparison</h2>
+          <button id="compareDockClose" class="icon-btn" aria-label="Close">
+            ✕
+          </button>
+        </div>
+        <div id="compareDockContent" class="compare-grid"></div>
+      </section>
+
       <section class="workspace">
         <div id="canvasContainer" class="resizable-container">
           <canvas id="canvas"></canvas>
@@ -64,17 +76,6 @@
             <button id="loadSample3">Load Sample 3</button>
           </div>
         </div>
-      </section>
-
-      <!-- Non-blocking comparison dock -->
-      <section id="compareDock" class="compare-dock hidden" aria-hidden="true">
-        <div class="compare-dock-header">
-          <h2>Algorithm Comparison</h2>
-          <button id="compareDockClose" class="icon-btn" aria-label="Close">
-            ✕
-          </button>
-        </div>
-        <div id="compareDockContent" class="compare-grid"></div>
       </section>
     </main>
 
