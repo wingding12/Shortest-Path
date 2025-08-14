@@ -41,9 +41,10 @@ main {
 
 .workspace {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: auto minmax(260px, 1fr);
   gap: 12px;
   margin-top: 8px;
+  align-items: stretch;
 }
 /* Resizable canvas container */
 .resizable-container {
@@ -68,7 +69,6 @@ main {
   padding: 8px;
   background: #fff;
   overflow: auto;
-  height: 500px;
 }
 pre {
   background: #f6f8fa;

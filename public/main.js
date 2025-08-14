@@ -318,12 +318,11 @@ function dumpState() {
   nodesOut.innerHTML = nodes
     .map((n) => `<li data-node-id="${n.id}">${n.id}</li>`)
     .join("");
-  // Edges: keep JSON for now
-  document.getElementById("edgesOut").textContent = JSON.stringify(
-    edges,
-    null,
-    2
-  );
+  // Edges: concise list: source -[w]-> target
+  const edgesOut = document.getElementById("edgesOut");
+  edgesOut.innerHTML = edges
+    .map((e) => `<li>${e.source} -[${e.weight}]-> ${e.target}</li>`)
+    .join("");
 }
 
 function getPayload() {
@@ -342,10 +341,6 @@ async function postJSON(path, body) {
   return res.json();
 }
 
-function showResults(obj) {
-  document.getElementById("results").textContent = JSON.stringify(obj, null, 2);
-}
-
 // Wire list click: show data and open edit
 const nodesListEl = document.getElementById("nodesOut");
 nodesListEl.addEventListener("click", (e) => {
@@ -354,17 +349,6 @@ nodesListEl.addEventListener("click", (e) => {
   const nodeId = li.getAttribute("data-node-id");
   const idx = nodes.findIndex((n) => n.id === nodeId);
   if (idx === -1) return;
-  const node = nodes[idx];
-  const incidentEdges = edges.filter(
-    (ed) => ed.source === nodeId || ed.target === nodeId
-  );
-  showResults({
-    selection: {
-      type: "node",
-      node: { id: node.id, x: node.x, y: node.y },
-      incidentEdges,
-    },
-  });
   openEditNodeDialog(idx);
 });
 
@@ -448,7 +432,9 @@ document
   .addEventListener("click", () => loadSample(3));
 
 // Buttons (toggle modes)
-addNodeBtn.addEventListener("click", () => {
+const addNodeBtn2 = document.getElementById("addNode");
+const addEdgeBtn2 = document.getElementById("addEdge");
+addNodeBtn2.addEventListener("click", () => {
   if (interactionMode === "addNode") {
     interactionMode = "none";
   } else {
@@ -458,7 +444,7 @@ addNodeBtn.addEventListener("click", () => {
   refreshModeUI();
 });
 
-addEdgeBtn.addEventListener("click", () => {
+addEdgeBtn2.addEventListener("click", () => {
   if (interactionMode === "addEdge") {
     interactionMode = "none";
     pendingEdgeSourceId = null;
@@ -489,10 +475,9 @@ document.getElementById("runDijkstra").addEventListener("click", async () => {
     }
     const result = await postJSON("/api/shortest-path/dijkstra", payload);
     highlightedPath = result.path || [];
-    showResults({ algorithm: "Dijkstra", result });
     redraw();
   } catch (e) {
-    showResults({ error: String(e) });
+    // swallow
   }
 });
 
@@ -507,10 +492,9 @@ document
       }
       const result = await postJSON("/api/shortest-path/bellman-ford", payload);
       highlightedPath = result.path || [];
-      showResults({ algorithm: "Bellman-Ford", result });
       redraw();
     } catch (e) {
-      showResults({ error: String(e) });
+      // swallow
     }
   });
 
@@ -583,7 +567,7 @@ document.getElementById("runCompare").addEventListener("click", async () => {
       result.dijkstra && result.dijkstra.path ? result.dijkstra.path : [];
     redraw();
   } catch (e) {
-    showResults({ error: String(e) });
+    // swallow
   }
 });
 
