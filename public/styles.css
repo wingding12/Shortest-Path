@@ -193,3 +193,21 @@ code.inline {
   padding: 2px 4px;
   border-radius: 4px;
 }
+
+/* Docked comparison section */
+.compare-dock.hidden {
+  display: none;
+}
+.compare-dock {
+  margin-top: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+.compare-dock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+}

@@ -21,21 +21,25 @@ let dialogMode = null; // 'edgeWeight' | 'editNode'
 let dialogEdgeContext = null; // { sourceId, targetId }
 let dialogNodeIndex = null; // index of node being edited
 
-// Compare modal
+// Compare dock
+const compareDock = document.getElementById("compareDock");
+const compareDockContent = document.getElementById("compareDockContent");
+const compareDockClose = document.getElementById("compareDockClose");
+compareDockClose.addEventListener("click", () => {
+  compareDock.classList.add("hidden");
+  compareDock.setAttribute("aria-hidden", "true");
+});
+
+// (Legacy) Compare modal refs (not used for display)
 const compareModal = document.getElementById("compareModal");
 const compareContent = document.getElementById("compareContent");
 const compareClose = document.getElementById("compareClose");
 const compareDismiss = document.getElementById("compareDismiss");
-
 function openCompareModal(contentHTML) {
+  // Keep in sync content but do not show overlay
   compareContent.innerHTML = contentHTML;
-  compareModal.classList.remove("hidden");
-  compareModal.setAttribute("aria-hidden", "false");
 }
-function closeCompareModal() {
-  compareModal.classList.add("hidden");
-  compareModal.setAttribute("aria-hidden", "true");
-}
+function closeCompareModal() {}
 compareClose.addEventListener("click", closeCompareModal);
 compareDismiss.addEventListener("click", closeCompareModal);
 
@@ -544,7 +548,10 @@ document.getElementById("runCompare").addEventListener("click", async () => {
       ${renderCard("Bellman-Ford", result.bellmanFord)}
     `;
 
-    openCompareModal(html);
+    // Render to dock (non-blocking)
+    compareDockContent.innerHTML = html;
+    compareDock.classList.remove("hidden");
+    compareDock.setAttribute("aria-hidden", "false");
 
     // Also highlight the Dijkstra path on the canvas by default
     highlightedPath =

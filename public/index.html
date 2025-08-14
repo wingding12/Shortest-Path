@@ -47,6 +47,17 @@
           <pre id="results"></pre>
         </aside>
       </section>
+
+      <!-- Non-blocking comparison dock -->
+      <section id="compareDock" class="compare-dock hidden" aria-hidden="true">
+        <div class="compare-dock-header">
+          <h2>Algorithm Comparison</h2>
+          <button id="compareDockClose" class="icon-btn" aria-label="Close">
+            ✕
+          </button>
+        </div>
+        <div id="compareDockContent" class="compare-grid"></div>
+      </section>
     </main>
 
     <!-- Mini dialog for adding nodes and edges -->
@@ -74,7 +85,7 @@
       </div>
     </div>
 
-    <!-- Comparison modal for side-by-side view -->
+    <!-- (Legacy) Comparison modal kept but unused to avoid overlaying the canvas -->
     <div id="compareModal" class="modal hidden" aria-hidden="true">
       <div
         class="modal-card modal-wide"
