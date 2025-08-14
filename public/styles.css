@@ -242,6 +242,18 @@ code.inline {
 .samples-bar {
   margin-top: 10px;
 }
+.samples-bar .control-group {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+}
+.samples-bar .group-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 6px;
+}
 .samples-bar .row {
   gap: 8px;
 }
