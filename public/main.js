@@ -9,6 +9,7 @@ let highlightedPath = [];
 // Interaction state
 let interactionMode = "none"; // 'none' | 'addNode' | 'addEdge'
 let pendingEdgeSourceId = null;
+let selectedAlgo = null; // 'dijkstra' | 'bellman'
 
 // Sync canvas intrinsic size to container CSS size
 function resizeCanvasToContainer() {
@@ -71,10 +72,14 @@ compareDismiss.addEventListener("click", closeCompareModal);
 // Buttons
 const addNodeBtn = document.getElementById("addNode");
 const addEdgeBtn = document.getElementById("addEdge");
+const runDijkstraBtn = document.getElementById("runDijkstra");
+const runBellmanBtn = document.getElementById("runBellmanFord");
 
 function refreshModeUI() {
   addNodeBtn.classList.toggle("mode-active", interactionMode === "addNode");
   addEdgeBtn.classList.toggle("mode-active", interactionMode === "addEdge");
+  runDijkstraBtn.classList.toggle("algo-active", selectedAlgo === "dijkstra");
+  runBellmanBtn.classList.toggle("algo-active", selectedAlgo === "bellman");
 }
 
 function openEdgeWeightDialog({ sourceId, targetId }) {
@@ -203,11 +208,10 @@ function generateNextNodeId() {
 
 function canvasToCoords(evt) {
   const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / parseFloat(canvas.style.width || rect.width);
-  const scaleY = canvas.height / parseFloat(canvas.style.height || rect.height);
+  // Use CSS pixel coordinates directly so click mapping is exact
   return {
-    x: (evt.clientX - rect.left) * scaleX,
-    y: (evt.clientY - rect.top) * scaleY,
+    x: evt.clientX - rect.left,
+    y: evt.clientY - rect.top,
   };
 }
 
@@ -432,9 +436,7 @@ document
   .addEventListener("click", () => loadSample(3));
 
 // Buttons (toggle modes)
-const addNodeBtn2 = document.getElementById("addNode");
-const addEdgeBtn2 = document.getElementById("addEdge");
-addNodeBtn2.addEventListener("click", () => {
+addNodeBtn.addEventListener("click", () => {
   if (interactionMode === "addNode") {
     interactionMode = "none";
   } else {
@@ -444,7 +446,7 @@ addNodeBtn2.addEventListener("click", () => {
   refreshModeUI();
 });
 
-addEdgeBtn2.addEventListener("click", () => {
+addEdgeBtn.addEventListener("click", () => {
   if (interactionMode === "addEdge") {
     interactionMode = "none";
     pendingEdgeSourceId = null;
@@ -456,18 +458,10 @@ addEdgeBtn2.addEventListener("click", () => {
   redraw();
 });
 
-document.getElementById("clearGraph").addEventListener("click", () => {
-  nodes.length = 0;
-  edges.length = 0;
-  highlightedPath = [];
-  pendingEdgeSourceId = null;
-  interactionMode = "none";
-  refreshModeUI();
-  redraw();
-});
-
-document.getElementById("runDijkstra").addEventListener("click", async () => {
+runDijkstraBtn.addEventListener("click", async () => {
   try {
+    selectedAlgo = "dijkstra";
+    refreshModeUI();
     const payload = getPayload();
     if (!payload.sourceId) {
       alert("Set Source ID");
@@ -476,27 +470,34 @@ document.getElementById("runDijkstra").addEventListener("click", async () => {
     const result = await postJSON("/api/shortest-path/dijkstra", payload);
     highlightedPath = result.path || [];
     redraw();
-  } catch (e) {
-    // swallow
-  }
+  } catch (_) {}
 });
 
-document
-  .getElementById("runBellmanFord")
-  .addEventListener("click", async () => {
-    try {
-      const payload = getPayload();
-      if (!payload.sourceId) {
-        alert("Set Source ID");
-        return;
-      }
-      const result = await postJSON("/api/shortest-path/bellman-ford", payload);
-      highlightedPath = result.path || [];
-      redraw();
-    } catch (e) {
-      // swallow
+runBellmanBtn.addEventListener("click", async () => {
+  try {
+    selectedAlgo = "bellman";
+    refreshModeUI();
+    const payload = getPayload();
+    if (!payload.sourceId) {
+      alert("Set Source ID");
+      return;
     }
-  });
+    const result = await postJSON("/api/shortest-path/bellman-ford", payload);
+    highlightedPath = result.path || [];
+    redraw();
+  } catch (_) {}
+});
+
+document.getElementById("clearGraph").addEventListener("click", () => {
+  nodes.length = 0;
+  edges.length = 0;
+  highlightedPath = [];
+  pendingEdgeSourceId = null;
+  interactionMode = "none";
+  selectedAlgo = null;
+  refreshModeUI();
+  redraw();
+});
 
 document.getElementById("runCompare").addEventListener("click", async () => {
   try {
@@ -566,9 +567,7 @@ document.getElementById("runCompare").addEventListener("click", async () => {
     highlightedPath =
       result.dijkstra && result.dijkstra.path ? result.dijkstra.path : [];
     redraw();
-  } catch (e) {
-    // swallow
-  }
+  } catch (_) {}
 });
 
 refreshModeUI();
