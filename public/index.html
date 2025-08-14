@@ -73,5 +73,26 @@
         </form>
       </div>
     </div>
+
+    <!-- Comparison modal for side-by-side view -->
+    <div id="compareModal" class="modal hidden" aria-hidden="true">
+      <div
+        class="modal-card modal-wide"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="compareTitle"
+      >
+        <div class="modal-header">
+          <h2 id="compareTitle">Algorithm Comparison</h2>
+          <button id="compareClose" class="icon-btn" aria-label="Close">
+            ✕
+          </button>
+        </div>
+        <div id="compareContent" class="compare-grid"></div>
+        <div class="modal-actions">
+          <button type="button" id="compareDismiss">Close</button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

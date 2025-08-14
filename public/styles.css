@@ -89,6 +89,10 @@ label {
   border: 1px solid #e5e7eb;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
+.modal-card.modal-wide {
+  width: 900px;
+  max-width: 98vw;
+}
 .modal-header {
   display: flex;
   align-items: center;
@@ -153,4 +157,39 @@ ul.list li {
 }
 ul.list li:last-child {
   border-bottom: none;
+}
+
+/* Comparison grid */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px 14px;
+}
+.compare-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f9fafb;
+}
+.compare-card h3 {
+  margin: 0 0 8px 0;
+}
+.badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+.badge {
+  font-size: 12px;
+  background: #e5e7eb;
+  color: #111827;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+code.inline {
+  background: #eef2f7;
+  padding: 2px 4px;
+  border-radius: 4px;
 }

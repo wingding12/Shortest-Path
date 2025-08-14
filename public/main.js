@@ -21,6 +21,24 @@ let dialogMode = null; // 'edgeWeight' | 'editNode'
 let dialogEdgeContext = null; // { sourceId, targetId }
 let dialogNodeIndex = null; // index of node being edited
 
+// Compare modal
+const compareModal = document.getElementById("compareModal");
+const compareContent = document.getElementById("compareContent");
+const compareClose = document.getElementById("compareClose");
+const compareDismiss = document.getElementById("compareDismiss");
+
+function openCompareModal(contentHTML) {
+  compareContent.innerHTML = contentHTML;
+  compareModal.classList.remove("hidden");
+  compareModal.setAttribute("aria-hidden", "false");
+}
+function closeCompareModal() {
+  compareModal.classList.add("hidden");
+  compareModal.setAttribute("aria-hidden", "true");
+}
+compareClose.addEventListener("click", closeCompareModal);
+compareDismiss.addEventListener("click", closeCompareModal);
+
 // Buttons
 const addNodeBtn = document.getElementById("addNode");
 const addEdgeBtn = document.getElementById("addEdge");
@@ -475,14 +493,62 @@ document.getElementById("runCompare").addEventListener("click", async () => {
       return;
     }
     const result = await postJSON("/api/shortest-path/compare", payload);
-    // Prefer Dijkstra path if present, else Bellman-Ford
+
+    // Build side-by-side HTML
+    function renderCard(title, data) {
+      const distSummary = (() => {
+        const idx = payload.targetId
+          ? nodes.findIndex((n) => n.id === payload.targetId)
+          : -1;
+        if (
+          idx >= 0 &&
+          data.dist &&
+          data.dist[idx] !== undefined &&
+          Number.isFinite(data.dist[idx])
+        ) {
+          return `${data.dist[idx]}`;
+        }
+        return payload.targetId ? "unreachable" : "—";
+      })();
+      const pathText =
+        Array.isArray(data.path) && data.path.length
+          ? data.path.join(" → ")
+          : "—";
+      const relax =
+        data.metrics && data.metrics.relaxations !== undefined
+          ? data.metrics.relaxations
+          : "—";
+      const heapOps =
+        data.metrics && data.metrics.heapOps !== undefined
+          ? data.metrics.heapOps
+          : "—";
+      const neg = data.hasNegativeCycle
+        ? '<span class="badge">neg-cycle</span>'
+        : "";
+      return `
+        <div class="compare-card">
+          <h3>${title}</h3>
+          <div class="badges">
+            <span class="badge">dist to target: <strong>${distSummary}</strong></span>
+            <span class="badge">relax: ${relax}</span>
+            <span class="badge">heapOps: ${heapOps}</span>
+            ${neg}
+          </div>
+          <div><strong>Path</strong>: <code class="inline">${pathText}</code></div>
+        </div>
+      `;
+    }
+
+    const html = `
+      ${renderCard("Dijkstra", result.dijkstra)}
+      ${renderCard("Bellman-Ford", result.bellmanFord)}
+    `;
+
+    openCompareModal(html);
+
+    // Also highlight the Dijkstra path on the canvas by default
     highlightedPath =
-      result.dijkstra && result.dijkstra.path
-        ? result.dijkstra.path
-        : result.bellmanFord
-        ? result.bellmanFord.path
-        : [];
-    showResults({ algorithm: "Compare", result });
+      result.dijkstra && result.dijkstra.path ? result.dijkstra.path : [];
     redraw();
   } catch (e) {
     showResults({ error: String(e) });
