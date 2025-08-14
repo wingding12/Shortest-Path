@@ -1,5 +1,6 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+const canvasContainer = document.getElementById("canvasContainer");
 
 const nodes = [];
 const edges = [];
@@ -8,6 +9,30 @@ let highlightedPath = [];
 // Interaction state
 let interactionMode = "none"; // 'none' | 'addNode' | 'addEdge'
 let pendingEdgeSourceId = null;
+
+// Sync canvas intrinsic size to container CSS size
+function resizeCanvasToContainer() {
+  const rect = canvasContainer.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const cssWidth = Math.max(1, Math.floor(rect.width));
+  const cssHeight = Math.max(1, Math.floor(rect.height));
+  canvas.width = Math.floor(cssWidth * dpr);
+  canvas.height = Math.floor(cssHeight * dpr);
+  canvas.style.width = cssWidth + "px";
+  canvas.style.height = cssHeight + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+resizeCanvasToContainer();
+const ro = new ResizeObserver(() => {
+  resizeCanvasToContainer();
+  redraw();
+});
+ro.observe(canvasContainer);
+window.addEventListener("resize", () => {
+  resizeCanvasToContainer();
+  redraw();
+});
 
 // Modal refs (edge weight or node edit)
 const dialog = document.getElementById("dialog");
@@ -178,8 +203,8 @@ function generateNextNodeId() {
 
 function canvasToCoords(evt) {
   const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
+  const scaleX = canvas.width / parseFloat(canvas.style.width || rect.width);
+  const scaleY = canvas.height / parseFloat(canvas.style.height || rect.height);
   return {
     x: (evt.clientX - rect.left) * scaleX,
     y: (evt.clientY - rect.top) * scaleY,
@@ -422,7 +447,7 @@ document
   .getElementById("loadSample3")
   .addEventListener("click", () => loadSample(3));
 
-// Wire buttons (toggle modes)
+// Buttons (toggle modes)
 addNodeBtn.addEventListener("click", () => {
   if (interactionMode === "addNode") {
     interactionMode = "none";

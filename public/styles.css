@@ -45,10 +45,22 @@ main {
   gap: 12px;
   margin-top: 8px;
 }
-#canvas {
+/* Resizable canvas container */
+.resizable-container {
+  resize: both;
+  overflow: auto;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   background: #fafafa;
+  min-width: 300px;
+  min-height: 200px;
+  width: 800px;
+  height: 500px;
+}
+#canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .panel {
   border: 1px solid #e5e7eb;
@@ -224,4 +236,12 @@ code.inline {
   justify-content: space-between;
   padding: 10px 12px;
   border-bottom: 1px solid #f3f4f6;
+}
+
+/* Samples bar */
+.samples-bar {
+  margin-top: 10px;
+}
+.samples-bar .row {
+  gap: 8px;
 }

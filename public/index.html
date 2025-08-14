@@ -41,17 +41,11 @@
             <button id="runCompare">Compare</button>
           </div>
         </div>
-        <div class="control-group">
-          <div class="group-title">Samples</div>
-          <div class="row">
-            <button id="loadSample1">Load Sample 1</button>
-            <button id="loadSample2">Load Sample 2</button>
-            <button id="loadSample3">Load Sample 3</button>
-          </div>
-        </div>
       </section>
       <section class="workspace">
-        <canvas id="canvas" width="800" height="500"></canvas>
+        <div id="canvasContainer" class="resizable-container">
+          <canvas id="canvas"></canvas>
+        </div>
         <aside class="panel">
           <h3>Nodes</h3>
           <ul id="nodesOut" class="list"></ul>
@@ -60,6 +54,16 @@
           <h3>Results</h3>
           <pre id="results"></pre>
         </aside>
+      </section>
+
+      <!-- Samples below the graph -->
+      <section class="samples-bar">
+        <div class="row">
+          <div class="group-title">Samples</div>
+          <button id="loadSample1">Load Sample 1</button>
+          <button id="loadSample2">Load Sample 2</button>
+          <button id="loadSample3">Load Sample 3</button>
+        </div>
       </section>
 
       <!-- Non-blocking comparison dock -->
