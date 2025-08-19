@@ -204,7 +204,7 @@ ul.list li:last-child {
 /* Comparison grid */
 .compare-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 12px;
   padding: 12px 14px;
 }
@@ -234,6 +234,19 @@ code.inline {
   background: #eef2f7;
   padding: 2px 4px;
   border-radius: 4px;
+}
+
+/* Algorithm-specific badge styling */
+.algorithm-badge {
+  background: #3b82f6 !important;
+  color: white !important;
+  font-weight: bold;
+}
+
+.complexity-badge {
+  background: #8b5cf6 !important;
+  color: white !important;
+  font-style: italic;
 }
 
 /* Docked comparison section */

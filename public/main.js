@@ -9,7 +9,7 @@ let highlightedPath = [];
 // Interaction state
 let interactionMode = "none"; // 'none' | 'addNode' | 'addEdge'
 let pendingEdgeSourceId = null;
-let selectedAlgo = null; // 'dijkstra' | 'bellman'
+let selectedAlgo = null; // 'dijkstra' | 'bellman' | 'tsinghua'
 
 // Sync canvas intrinsic size to container CSS size
 function resizeCanvasToContainer() {
@@ -74,12 +74,14 @@ const addNodeBtn = document.getElementById("addNode");
 const addEdgeBtn = document.getElementById("addEdge");
 const runDijkstraBtn = document.getElementById("runDijkstra");
 const runBellmanBtn = document.getElementById("runBellmanFord");
+const runTsinghuaBtn = document.getElementById("runTsinghua");
 
 function refreshModeUI() {
   addNodeBtn.classList.toggle("mode-active", interactionMode === "addNode");
   addEdgeBtn.classList.toggle("mode-active", interactionMode === "addEdge");
   runDijkstraBtn.classList.toggle("algo-active", selectedAlgo === "dijkstra");
   runBellmanBtn.classList.toggle("algo-active", selectedAlgo === "bellman");
+  runTsinghuaBtn.classList.toggle("algo-active", selectedAlgo === "tsinghua");
 }
 
 function removeDialogDeleteButtonIfAny() {
@@ -400,7 +402,7 @@ nodesListEl.addEventListener("click", (e) => {
   openEditNodeDialog(idx);
 });
 
-// Samples
+// Samples - Enhanced with algorithm-specific examples
 function loadSample(sampleIndex) {
   nodes.length = 0;
   edges.length = 0;
@@ -409,6 +411,7 @@ function loadSample(sampleIndex) {
   interactionMode = "none";
 
   if (sampleIndex === 1) {
+    // Basic Graph - Good for all algorithms
     nodes.push(
       { id: "A", x: 120, y: 120 },
       { id: "B", x: 320, y: 100 },
@@ -427,6 +430,7 @@ function loadSample(sampleIndex) {
     document.getElementById("sourceId").value = "A";
     document.getElementById("targetId").value = "C";
   } else if (sampleIndex === 2) {
+    // Multiple Paths - Shows different exploration strategies
     nodes.push(
       { id: "S", x: 100, y: 250 },
       { id: "T", x: 700, y: 250 },
@@ -446,6 +450,7 @@ function loadSample(sampleIndex) {
     document.getElementById("sourceId").value = "S";
     document.getElementById("targetId").value = "T";
   } else if (sampleIndex === 3) {
+    // Negative Weights - Only Bellman-Ford can handle
     nodes.push(
       { id: "1", x: 120, y: 120 },
       { id: "2", x: 240, y: 240 },
@@ -463,12 +468,151 @@ function loadSample(sampleIndex) {
     );
     document.getElementById("sourceId").value = "1";
     document.getElementById("targetId").value = "5";
+  } else if (sampleIndex === 4) {
+    // Dijkstra's Best Case - Dense graph with non-negative weights
+    nodes.push(
+      { id: "S", x: 100, y: 200 },
+      { id: "A", x: 200, y: 100 },
+      { id: "B", x: 200, y: 300 },
+      { id: "C", x: 300, y: 150 },
+      { id: "D", x: 300, y: 250 },
+      { id: "E", x: 400, y: 100 },
+      { id: "F", x: 400, y: 300 },
+      { id: "T", x: 500, y: 200 }
+    );
+    edges.push(
+      { source: "S", target: "A", weight: 1 },
+      { source: "S", target: "B", weight: 4 },
+      { source: "A", target: "C", weight: 2 },
+      { source: "A", target: "E", weight: 5 },
+      { source: "B", target: "D", weight: 1 },
+      { source: "B", target: "F", weight: 3 },
+      { source: "C", target: "E", weight: 1 },
+      { source: "C", target: "D", weight: 3 },
+      { source: "D", target: "F", weight: 2 },
+      { source: "D", target: "T", weight: 4 },
+      { source: "E", target: "T", weight: 2 },
+      { source: "F", target: "T", weight: 1 }
+    );
+    document.getElementById("sourceId").value = "S";
+    document.getElementById("targetId").value = "T";
+  } else if (sampleIndex === 5) {
+    // Bellman-Ford's Strength - Graph with negative weights but no cycles
+    nodes.push(
+      { id: "S", x: 100, y: 200 },
+      { id: "A", x: 250, y: 100 },
+      { id: "B", x: 250, y: 300 },
+      { id: "C", x: 400, y: 150 },
+      { id: "D", x: 400, y: 250 },
+      { id: "T", x: 550, y: 200 }
+    );
+    edges.push(
+      { source: "S", target: "A", weight: 10 },
+      { source: "S", target: "B", weight: 5 },
+      { source: "A", target: "C", weight: 1 },
+      { source: "B", target: "A", weight: -7 }, // Negative weight!
+      { source: "B", target: "D", weight: 2 },
+      { source: "C", target: "T", weight: 4 },
+      { source: "D", target: "C", weight: -2 }, // Negative weight!
+      { source: "D", target: "T", weight: 6 }
+    );
+    document.getElementById("sourceId").value = "S";
+    document.getElementById("targetId").value = "T";
+  } else if (sampleIndex === 6) {
+    // Tsinghua's Advantage - Sparse graph with many nodes (simulated sparsity)
+    nodes.push(
+      { id: "S", x: 50, y: 250 },
+      { id: "L1", x: 150, y: 100 },
+      { id: "L2", x: 150, y: 200 },
+      { id: "L3", x: 150, y: 300 },
+      { id: "L4", x: 150, y: 400 },
+      { id: "M1", x: 300, y: 150 },
+      { id: "M2", x: 300, y: 250 },
+      { id: "M3", x: 300, y: 350 },
+      { id: "R1", x: 450, y: 200 },
+      { id: "R2", x: 450, y: 300 },
+      { id: "T", x: 600, y: 250 }
+    );
+    edges.push(
+      // Sparse connectivity - few edges relative to nodes
+      { source: "S", target: "L2", weight: 1 },
+      { source: "L1", target: "M1", weight: 2 },
+      { source: "L2", target: "M2", weight: 1 },
+      { source: "L3", target: "M3", weight: 2 },
+      { source: "M1", target: "R1", weight: 3 },
+      { source: "M2", target: "R1", weight: 2 },
+      { source: "M2", target: "R2", weight: 4 },
+      { source: "M3", target: "R2", weight: 1 },
+      { source: "R1", target: "T", weight: 2 },
+      { source: "R2", target: "T", weight: 3 },
+      // Few strategic connections
+      { source: "S", target: "L1", weight: 8 },
+      { source: "L4", target: "M3", weight: 1 }
+    );
+    document.getElementById("sourceId").value = "S";
+    document.getElementById("targetId").value = "T";
+  } else if (sampleIndex === 7) {
+    // Dense vs Sparse comparison - Medium density
+    nodes.push(
+      { id: "S", x: 100, y: 250 },
+      { id: "A", x: 200, y: 150 },
+      { id: "B", x: 200, y: 250 },
+      { id: "C", x: 200, y: 350 },
+      { id: "D", x: 350, y: 150 },
+      { id: "E", x: 350, y: 250 },
+      { id: "F", x: 350, y: 350 },
+      { id: "T", x: 500, y: 250 }
+    );
+    edges.push(
+      // More edges showing density impact
+      { source: "S", target: "A", weight: 2 },
+      { source: "S", target: "B", weight: 1 },
+      { source: "S", target: "C", weight: 3 },
+      { source: "A", target: "B", weight: 1 },
+      { source: "A", target: "D", weight: 4 },
+      { source: "B", target: "A", weight: 2 },
+      { source: "B", target: "C", weight: 1 },
+      { source: "B", target: "E", weight: 3 },
+      { source: "C", target: "B", weight: 2 },
+      { source: "C", target: "F", weight: 1 },
+      { source: "D", target: "E", weight: 1 },
+      { source: "D", target: "T", weight: 5 },
+      { source: "E", target: "D", weight: 2 },
+      { source: "E", target: "F", weight: 1 },
+      { source: "E", target: "T", weight: 2 },
+      { source: "F", target: "E", weight: 3 },
+      { source: "F", target: "T", weight: 4 }
+    );
+    document.getElementById("sourceId").value = "S";
+    document.getElementById("targetId").value = "T";
+  } else if (sampleIndex === 8) {
+    // Negative Cycle - Only Bellman-Ford can detect
+    nodes.push(
+      { id: "S", x: 100, y: 200 },
+      { id: "A", x: 250, y: 150 },
+      { id: "B", x: 350, y: 100 },
+      { id: "C", x: 350, y: 200 },
+      { id: "D", x: 250, y: 250 },
+      { id: "T", x: 500, y: 200 }
+    );
+    edges.push(
+      { source: "S", target: "A", weight: 1 },
+      { source: "A", target: "B", weight: 1 },
+      { source: "B", target: "C", weight: -3 }, // Part of negative cycle
+      { source: "C", target: "D", weight: 1 }, // Part of negative cycle
+      { source: "D", target: "A", weight: 1 }, // Completes negative cycle: A->B->C->D->A = 0
+      { source: "C", target: "T", weight: 2 },
+      { source: "A", target: "T", weight: 5 }
+    );
+    document.getElementById("sourceId").value = "S";
+    document.getElementById("targetId").value = "T";
   }
 
   refreshModeUI();
   redraw();
 }
 
+// Basic Samples
 document
   .getElementById("loadSample1")
   .addEventListener("click", () => loadSample(1));
@@ -478,6 +622,23 @@ document
 document
   .getElementById("loadSample3")
   .addEventListener("click", () => loadSample(3));
+
+// Algorithm Showcase Samples
+document
+  .getElementById("loadSample4")
+  .addEventListener("click", () => loadSample(4));
+document
+  .getElementById("loadSample5")
+  .addEventListener("click", () => loadSample(5));
+document
+  .getElementById("loadSample6")
+  .addEventListener("click", () => loadSample(6));
+document
+  .getElementById("loadSample7")
+  .addEventListener("click", () => loadSample(7));
+document
+  .getElementById("loadSample8")
+  .addEventListener("click", () => loadSample(8));
 
 // Buttons (toggle modes)
 addNodeBtn.addEventListener("click", () => {
@@ -532,6 +693,21 @@ runBellmanBtn.addEventListener("click", async () => {
   } catch (_) {}
 });
 
+runTsinghuaBtn.addEventListener("click", async () => {
+  try {
+    selectedAlgo = "tsinghua";
+    refreshModeUI();
+    const payload = getPayload();
+    if (!payload.sourceId) {
+      alert("Set Source ID");
+      return;
+    }
+    const result = await postJSON("/api/shortest-path/tsinghua", payload);
+    highlightedPath = result.path || [];
+    redraw();
+  } catch (_) {}
+});
+
 document.getElementById("clearGraph").addEventListener("click", () => {
   nodes.length = 0;
   edges.length = 0;
@@ -552,7 +728,7 @@ document.getElementById("runCompare").addEventListener("click", async () => {
     }
     const result = await postJSON("/api/shortest-path/compare", payload);
 
-    // Build side-by-side HTML
+    // Build side-by-side HTML for all three algorithms
     function renderCard(title, data) {
       const distSummary = (() => {
         const idx = payload.targetId
@@ -580,16 +756,59 @@ document.getElementById("runCompare").addEventListener("click", async () => {
         data.metrics && data.metrics.heapOps !== undefined
           ? data.metrics.heapOps
           : "—";
+      const pivots =
+        data.metrics && data.metrics.pivotSelections !== undefined
+          ? data.metrics.pivotSelections
+          : "—";
+      const partitions =
+        data.metrics && data.metrics.recursivePartitions !== undefined
+          ? data.metrics.recursivePartitions
+          : "—";
+      const complexity =
+        data.metrics && data.metrics.theoreticalComplexity
+          ? data.metrics.theoreticalComplexity
+          : "";
       const neg = data.hasNegativeCycle
         ? '<span class="badge">neg-cycle</span>'
         : "";
+      const algorithmBadge = data.algorithm
+        ? `<span class="badge algorithm-badge">${data.algorithm}</span>`
+        : "";
+
+      // Different metrics for different algorithms
+      let algorithmSpecificMetrics = "";
+      if (title.includes("Dijkstra")) {
+        algorithmSpecificMetrics = `
+          <span class="badge">relax: ${relax}</span>
+          <span class="badge">heapOps: ${heapOps}</span>
+        `;
+      } else if (title.includes("Bellman-Ford")) {
+        algorithmSpecificMetrics = `
+          <span class="badge">relax: ${relax}</span>
+          <span class="badge">iterations: ${
+            data.metrics?.iterations || "—"
+          }</span>
+        `;
+      } else if (title.includes("Tsinghua")) {
+        algorithmSpecificMetrics = `
+          <span class="badge">relax: ${relax}</span>
+          <span class="badge">pivots: ${pivots}</span>
+          <span class="badge">partitions: ${partitions}</span>
+        `;
+      }
+
       return `
         <div class="compare-card">
           <h3>${title}</h3>
           <div class="badges">
+            ${algorithmBadge}
             <span class="badge">dist to target: <strong>${distSummary}</strong></span>
-            <span class="badge">relax: ${relax}</span>
-            <span class="badge">heapOps: ${heapOps}</span>
+            ${algorithmSpecificMetrics}
+            ${
+              complexity
+                ? `<span class="badge complexity-badge">${complexity}</span>`
+                : ""
+            }
             ${neg}
           </div>
           <div><strong>Path</strong>: <code class="inline">${pathText}</code></div>
@@ -598,8 +817,9 @@ document.getElementById("runCompare").addEventListener("click", async () => {
     }
 
     const html = `
-      ${renderCard("Dijkstra", result.dijkstra)}
-      ${renderCard("Bellman-Ford", result.bellmanFord)}
+      ${renderCard("Dijkstra (1959)", result.dijkstra)}
+      ${renderCard("Bellman-Ford (1956)", result.bellmanFord)}
+      ${renderCard("Tsinghua (2025)", result.tsinghua)}
     `;
 
     // Render to dock (non-blocking)

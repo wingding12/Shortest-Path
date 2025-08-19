@@ -1,13 +1,17 @@
 # Shortest Path Comparator
 
-An interactive web application for visualizing and comparing shortest path algorithms (Dijkstra vs Bellman-Ford) with real-time graph manipulation and performance analysis.
+An interactive web application for visualizing and comparing shortest path algorithms with real-time graph manipulation and performance analysis. Features three algorithms spanning 70 years of computer science evolution: **Bellman-Ford (1956)**, **Dijkstra (1959)**, and the groundbreaking **Tsinghua SSSP (2025)**.
 
-This project aims to provide an educational and interactive platform for understanding how different shortest path algorithms work. By offering side-by-side comparisons of Dijkstra's algorithm and the Bellman-Ford algorithm, users can:
+This project aims to provide an educational and interactive platform for understanding how different shortest path algorithms work. By offering side-by-side comparisons of three groundbreaking algorithms spanning 70 years of computer science research, users can:
 
-- **Visualize Algorithm Behavior**: See how each algorithm explores the graph differently
-- **Compare Performance**: Analyze metrics like relaxations and heap operations
-- **Understand Trade-offs**: Learn when to use each algorithm (Dijkstra for non-negative weights, Bellman-Ford for graphs with negative edges)
-- **Interactive Learning**: Create custom graphs to test edge cases and algorithm limitations
+- **Visualize Algorithm Behavior**: See how each algorithm explores graphs differently across different eras
+- **Compare Performance**: Analyze metrics like relaxations, heap operations, pivot selections, and recursive partitions
+- **Understand Evolution**: Learn how algorithmic thinking has evolved from the 1950s to cutting-edge 2025 research
+- **Algorithm Trade-offs**: Master when to use each algorithm:
+  - **Bellman-Ford (1956)**: Handles negative weights, detects negative cycles
+  - **Dijkstra (1959)**: Optimal for non-negative weights with O(m + n log n) complexity
+  - **Tsinghua (2025)**: Revolutionary O(m log^(2/3) n) breakthrough for sparse graphs
+- **Interactive Learning**: Create custom graphs to test edge cases and algorithm limitations across three generations of SSSP research
 
 ## 🚀 Getting Started
 
@@ -52,7 +56,7 @@ This project aims to provide an educational and interactive platform for underst
 
    - **Source/Target Selection**: Input fields to specify start and end nodes
    - **Graph Editing Tools**: Buttons to add nodes, add edges, and clear the graph
-   - **Algorithm Runners**: Individual buttons for Dijkstra and Bellman-Ford, plus a comparison tool
+   - **Algorithm Runners**: Individual buttons for all three algorithms (Bellman-Ford 1956, Dijkstra 1959, Tsinghua 2025), plus a comparison tool
 
 2. **Interactive Canvas** (Center)
 
@@ -71,39 +75,100 @@ This project aims to provide an educational and interactive platform for underst
    - **Performance Metrics**: Shows relaxations, heap operations, and negative cycle detection
 
 5. **Sample Graphs** (Bottom)
-   - **Pre-built Examples**: Three sample graphs to quickly test different scenarios
+   - **Pre-built Examples**: Three sample graphs to quickly test different scenarios and algorithm behaviors
 
 ### Sample Graphs
 
-Use the sample buttons to quickly load test scenarios:
+#### Basic Samples
 
-- **Sample 1**: Basic positive-weight graph
-- **Sample 2**: Longer path with multiple routes
-- **Sample 3**: Graph with negative edge weights (tests Bellman-Ford's negative cycle detection)
+- **Basic Graph**: Simple positive-weight graph showcasing all three algorithms
+- **Multiple Paths**: Multiple route options demonstrating different exploration strategies
+- **Negative Weights**: Graph with negative edges (only Bellman-Ford handles these)
+
+#### Algorithm Showcase Samples
+
+- **Dijkstra's Best Case**: Dense graph with non-negative weights where Dijkstra excels
+- **Bellman-Ford's Strength**: Negative weight graph showcasing unique Bellman-Ford capabilities
+- **Tsinghua's Advantage**: Sparse graph demonstrating the breakthrough algorithm's efficiency
+- **Dense vs Sparse**: Medium-density graph comparing algorithmic approaches
+- **Negative Cycle**: Graph with negative cycle (only Bellman-Ford can detect and handle)
 
 ### Understanding the Results
 
-#### Dijkstra's Algorithm
+#### Bellman-Ford Algorithm (1956) - The Foundation
 
-- **Best for**: Graphs with non-negative edge weights
+- **Historical Significance**: Original SSSP solution by Richard Bellman and Lester Ford Jr.
+- **Best for**: Graphs with negative edge weights, detecting negative cycles
+- **Complexity**: O(VE) - Always runs exactly |V|-1 iterations as originally designed
+- **Metrics**: Shows relaxations and iterations (faithful to 1950s implementation)
+- **Behavior**: Systematic edge relaxation, guaranteed correctness for negative weights
+
+#### Dijkstra's Algorithm (1959) - The Optimization
+
+- **Historical Significance**: Edsger Dijkstra's greedy optimization for non-negative weights
+- **Best for**: Graphs with non-negative edge weights requiring optimal performance
+- **Complexity**: O((V + E) log V) with binary heap implementation
 - **Metrics**: Shows relaxations and heap operations
 - **Behavior**: Greedy approach, visits nodes in order of shortest distance
 
-#### Bellman-Ford Algorithm
+#### Tsinghua SSSP Algorithm (2025) - The Breakthrough
 
-- **Best for**: Graphs that may contain negative edge weights
-- **Metrics**: Shows relaxations and detects negative cycles
-- **Behavior**: Iterative approach, can handle negative weights but slower than Dijkstra
+- **Historical Significance**: Duan Ran's team breaks the theoretical barrier with revolutionary approach
+- **Best for**: Sparse graphs where m << n² requiring cutting-edge performance
+- **Complexity**: O(m log^(2/3) n) - First algorithm to improve upon Dijkstra's bound
+- **Metrics**: Shows relaxations, pivot selections, and recursive partitions
+- **Innovations**:
+  - Recursive partial ordering avoids full priority queue sorting
+  - Pivot-based clustering reduces comparison overhead
+  - Hybrid approach combining Bellman-Ford relaxation with modern techniques
 
 #### Comparison View
 
 - **Distance to Target**: Shows the shortest distance found by each algorithm
 - **Path**: Displays the actual shortest path as a sequence of nodes
-- **Performance Metrics**: Compare computational efficiency
-- **Negative Cycle Detection**: Bellman-Ford will flag if negative cycles exist
+- **Algorithm Evolution**: Compare how 70 years of research improved SSSP solutions
+- **Performance Metrics**: Analyze computational efficiency across three generations
+- **Complexity Analysis**: See theoretical vs practical performance differences
+- **Negative Cycle Detection**: Bellman-Ford will flag negative cycles (others require non-negative weights)
 
 ## Architecture
 
 - **Frontend**: Vanilla JavaScript with HTML5 Canvas for graph visualization
 - **Backend**: Node.js with Express.js REST API
-- **Algorithms**: Clean implementations with performance tracking
+- **Algorithms**: Three historically-accurate implementations with comprehensive performance tracking
+  - **Bellman-Ford (1956)**: Faithful to original mid-1950s conception
+  - **Dijkstra (1959)**: Optimized with binary heap implementation
+  - **Tsinghua (2025)**: Cutting-edge algorithm with recursive partial ordering
+
+### API Endpoints
+
+- `POST /api/shortest-path/dijkstra` - Run Dijkstra's algorithm (1959)
+- `POST /api/shortest-path/bellman-ford` - Run Bellman-Ford algorithm (1956)
+- `POST /api/shortest-path/tsinghua` - Run Tsinghua SSSP algorithm (2025)
+- `POST /api/shortest-path/compare` - Run all three algorithms and compare
+
+### File Structure
+
+```
+├── algorithms/
+│   ├── dijkstra.js        # Dijkstra's algorithm (1959)
+│   ├── bellmanFord.js     # Original Bellman-Ford (1956)
+│   └── tsinghua.js        # Tsinghua SSSP breakthrough (2025)
+├── public/
+│   ├── index.html         # Main HTML interface
+│   ├── main.js           # Frontend JavaScript logic
+│   └── styles.css        # Styling and layout
+├── server.js             # Express.js backend server
+└── package.json          # Dependencies and scripts
+```
+
+## 🎓 Educational Use Cases
+
+1. **Algorithm Evolution Study**: Understand how SSSP algorithms evolved over 70 years of research
+2. **Performance Analysis**: See how graph structure affects different algorithmic approaches
+3. **Historical Computer Science**: Learn about landmark algorithms from 1956, 1959, and 2025
+4. **Complexity Theory**: Compare theoretical vs practical performance across three complexity classes
+5. **Edge Case Testing**: Create graphs with negative weights to test algorithm limitations
+6. **Visual Learning**: Watch how different algorithmic strategies explore graphs
+7. **Interactive Research**: Experiment with cutting-edge 2025 algorithm innovations
+8. **Comparative Algorithmic**: Understand when each algorithm is most appropriate

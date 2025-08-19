@@ -4,6 +4,7 @@ const path = require("path");
 
 const { runDijkstra } = require("./algorithms/dijkstra");
 const { runBellmanFord } = require("./algorithms/bellmanFord");
+const { runTsinghua } = require("./algorithms/tsinghua");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -48,6 +49,22 @@ app.post("/api/shortest-path/bellman-ford", (req, res) => {
   }
 });
 
+app.post("/api/shortest-path/tsinghua", (req, res) => {
+  try {
+    const { nodes, edges, sourceId, targetId } = req.body;
+    if (!nodes || !edges || sourceId === undefined) {
+      return res
+        .status(400)
+        .json({ error: "nodes, edges, and sourceId are required" });
+    }
+    const result = runTsinghua({ nodes, edges, sourceId, targetId });
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 app.post("/api/shortest-path/compare", (req, res) => {
   try {
     const { nodes, edges, sourceId, targetId } = req.body;
@@ -58,7 +75,8 @@ app.post("/api/shortest-path/compare", (req, res) => {
     }
     const dijkstra = runDijkstra({ nodes, edges, sourceId, targetId });
     const bellmanFord = runBellmanFord({ nodes, edges, sourceId, targetId });
-    res.json({ dijkstra, bellmanFord });
+    const tsinghua = runTsinghua({ nodes, edges, sourceId, targetId });
+    res.json({ dijkstra, bellmanFord, tsinghua });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
