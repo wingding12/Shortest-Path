@@ -82,6 +82,11 @@ function refreshModeUI() {
   runBellmanBtn.classList.toggle("algo-active", selectedAlgo === "bellman");
 }
 
+function removeDialogDeleteButtonIfAny() {
+  const existing = document.getElementById("dialogDelete");
+  if (existing) existing.remove();
+}
+
 function openEdgeWeightDialog({ sourceId, targetId }) {
   dialogMode = "edgeWeight";
   dialogEdgeContext = { sourceId, targetId };
@@ -89,6 +94,7 @@ function openEdgeWeightDialog({ sourceId, targetId }) {
   dialogError.textContent = "";
   dialogFields.innerHTML = "";
   dialogTitle.textContent = "Set Edge Weight";
+  removeDialogDeleteButtonIfAny();
   dialogFields.insertAdjacentHTML(
     "beforeend",
     [
@@ -117,6 +123,44 @@ function openEditNodeDialog(nodeIndex) {
       `<label>Y<input id="field_node_y" type="number" value="${n.y}" /></label>`,
     ].join("")
   );
+  // Ensure a Delete button exists in actions for edit mode
+  const actions = dialog.querySelector(".modal-actions");
+  let delBtn = document.getElementById("dialogDelete");
+  if (!delBtn) {
+    delBtn = document.createElement("button");
+    delBtn.id = "dialogDelete";
+    delBtn.type = "button";
+    delBtn.textContent = "Delete";
+    // Insert before Cancel for visibility
+    actions.insertBefore(delBtn, actions.firstChild);
+  }
+  delBtn.onclick = () => {
+    if (dialogNodeIndex === null || dialogNodeIndex === undefined) return;
+    const nodeIdToRemove = nodes[dialogNodeIndex].id;
+    // Remove node
+    nodes.splice(dialogNodeIndex, 1);
+    // Remove connected edges
+    for (let i = edges.length - 1; i >= 0; i--) {
+      if (
+        edges[i].source === nodeIdToRemove ||
+        edges[i].target === nodeIdToRemove
+      ) {
+        edges.splice(i, 1);
+      }
+    }
+    // Clear inputs if they referred to this node
+    const sourceInput = document.getElementById("sourceId");
+    const targetInput = document.getElementById("targetId");
+    if (sourceInput.value === nodeIdToRemove) sourceInput.value = "";
+    if (targetInput.value === nodeIdToRemove) targetInput.value = "";
+    // Reset pending edge source if applicable
+    if (pendingEdgeSourceId === nodeIdToRemove) pendingEdgeSourceId = null;
+    // Clear any highlighted path that may reference the node
+    highlightedPath = [];
+    closeDialog();
+    redraw();
+  };
+
   dialog.classList.remove("hidden");
   dialog.setAttribute("aria-hidden", "false");
 }
