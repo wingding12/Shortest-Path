@@ -391,6 +391,91 @@ async function postJSON(path, body) {
   return res.json();
 }
 
+// Display algorithm result in the results panel
+function displayAlgorithmResult(algorithmName, result) {
+  const resultsDisplay = document.getElementById("algorithmResults");
+
+  const pathText =
+    Array.isArray(result.path) && result.path.length
+      ? result.path.join(" → ")
+      : "No path found";
+
+  const targetId = document.getElementById("targetId").value;
+  const distanceText = (() => {
+    if (!targetId) return "—";
+    const targetIndex = nodes.findIndex((n) => n.id === targetId);
+    if (
+      targetIndex >= 0 &&
+      result.dist &&
+      Number.isFinite(result.dist[targetIndex])
+    ) {
+      return result.dist[targetIndex];
+    }
+    return "unreachable";
+  })();
+
+  let metricsHTML = "";
+  if (result.metrics) {
+    const metrics = [];
+    if (result.metrics.relaxations !== undefined) {
+      metrics.push(
+        `<span class="metric-badge">Relaxations: ${result.metrics.relaxations}</span>`
+      );
+    }
+    if (result.metrics.heapOps !== undefined) {
+      metrics.push(
+        `<span class="metric-badge">Heap Ops: ${result.metrics.heapOps}</span>`
+      );
+    }
+    if (result.metrics.iterations !== undefined) {
+      metrics.push(
+        `<span class="metric-badge">Iterations: ${result.metrics.iterations}</span>`
+      );
+    }
+    if (result.metrics.pivotSelections !== undefined) {
+      metrics.push(
+        `<span class="metric-badge">Pivots: ${result.metrics.pivotSelections}</span>`
+      );
+    }
+    if (result.metrics.recursivePartitions !== undefined) {
+      metrics.push(
+        `<span class="metric-badge">Partitions: ${result.metrics.recursivePartitions}</span>`
+      );
+    }
+    if (result.metrics.theoreticalComplexity) {
+      metrics.push(
+        `<span class="metric-badge complexity-badge">${result.metrics.theoreticalComplexity}</span>`
+      );
+    }
+    metricsHTML = `<div class="result-metrics">${metrics.join("")}</div>`;
+  }
+
+  const negCycleText = result.hasNegativeCycle
+    ? '<div style="color: #dc2626; font-weight: bold;">⚠️ Negative cycle detected!</div>'
+    : "";
+
+  resultsDisplay.innerHTML = `
+    <div class="result-item">
+      <div class="result-title">${algorithmName}</div>
+      <div><strong>Distance to target:</strong> ${distanceText}</div>
+      <div><strong>Path:</strong> <span class="result-path">${pathText}</span></div>
+      ${metricsHTML}
+      ${negCycleText}
+    </div>
+  `;
+}
+
+// Display algorithm error
+function displayAlgorithmError(algorithmName, errorMessage) {
+  const resultsDisplay = document.getElementById("algorithmResults");
+  resultsDisplay.innerHTML = `
+    <div class="result-item">
+      <div class="result-title" style="color: #dc2626;">${algorithmName} - Error</div>
+      <div style="color: #dc2626;">${errorMessage}</div>
+    </div>
+  `;
+}
+
 // Wire list click: show data and open edit
 const nodesListEl = document.getElementById("nodesOut");
 nodesListEl.addEventListener("click", (e) => {
@@ -608,6 +693,11 @@ function loadSample(sampleIndex) {
     document.getElementById("targetId").value = "T";
   }
 
+  // Clear results display when loading a new sample
+  const resultsDisplay = document.getElementById("algorithmResults");
+  resultsDisplay.innerHTML =
+    '<p class="help-text">Run an algorithm to see path and metrics here</p>';
+
   refreshModeUI();
   redraw();
 }
@@ -674,8 +764,12 @@ runDijkstraBtn.addEventListener("click", async () => {
     }
     const result = await postJSON("/api/shortest-path/dijkstra", payload);
     highlightedPath = result.path || [];
+    displayAlgorithmResult("Dijkstra (1959)", result);
     redraw();
-  } catch (_) {}
+  } catch (error) {
+    console.error("Dijkstra error:", error);
+    displayAlgorithmError("Dijkstra", error.message);
+  }
 });
 
 runBellmanBtn.addEventListener("click", async () => {
@@ -689,8 +783,12 @@ runBellmanBtn.addEventListener("click", async () => {
     }
     const result = await postJSON("/api/shortest-path/bellman-ford", payload);
     highlightedPath = result.path || [];
+    displayAlgorithmResult("Bellman-Ford (1956)", result);
     redraw();
-  } catch (_) {}
+  } catch (error) {
+    console.error("Bellman-Ford error:", error);
+    displayAlgorithmError("Bellman-Ford", error.message);
+  }
 });
 
 runTsinghuaBtn.addEventListener("click", async () => {
@@ -704,8 +802,12 @@ runTsinghuaBtn.addEventListener("click", async () => {
     }
     const result = await postJSON("/api/shortest-path/tsinghua", payload);
     highlightedPath = result.path || [];
+    displayAlgorithmResult("Tsinghua (2025)", result);
     redraw();
-  } catch (_) {}
+  } catch (error) {
+    console.error("Tsinghua error:", error);
+    displayAlgorithmError("Tsinghua", error.message);
+  }
 });
 
 document.getElementById("clearGraph").addEventListener("click", () => {
@@ -715,6 +817,12 @@ document.getElementById("clearGraph").addEventListener("click", () => {
   pendingEdgeSourceId = null;
   interactionMode = "none";
   selectedAlgo = null;
+
+  // Clear results display
+  const resultsDisplay = document.getElementById("algorithmResults");
+  resultsDisplay.innerHTML =
+    '<p class="help-text">Run an algorithm to see path and metrics here</p>';
+
   refreshModeUI();
   redraw();
 });

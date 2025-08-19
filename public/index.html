@@ -58,39 +58,48 @@
       </section>
 
       <section class="workspace">
+        <!-- Samples moved to the left -->
+        <aside class="samples-panel">
+          <div class="control-group">
+            <div class="group-title">Basic Samples</div>
+            <div class="sample-column">
+              <button id="loadSample1">Basic Graph</button>
+              <button id="loadSample2">Multiple Paths</button>
+              <button id="loadSample3">Negative Weights</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="group-title">Algorithm Showcase</div>
+            <div class="sample-column">
+              <button id="loadSample4">Dijkstra's Best Case</button>
+              <button id="loadSample5">Bellman-Ford's Strength</button>
+              <button id="loadSample6">Tsinghua's Advantage</button>
+              <button id="loadSample7">Dense vs Sparse</button>
+              <button id="loadSample8">Negative Cycle</button>
+            </div>
+          </div>
+
+          <!-- Path display section -->
+          <div class="control-group">
+            <div class="group-title">Algorithm Results</div>
+            <div id="algorithmResults" class="results-display">
+              <p class="help-text">
+                Run an algorithm to see path and metrics here
+              </p>
+            </div>
+          </div>
+        </aside>
+
         <div id="canvasContainer" class="resizable-container">
           <canvas id="canvas"></canvas>
         </div>
+
         <aside class="panel">
           <h3>Nodes</h3>
           <ul id="nodesOut" class="list"></ul>
           <h3>Edges</h3>
           <ul id="edgesOut" class="list"></ul>
         </aside>
-      </section>
-
-      <!-- Samples below the graph -->
-      <section class="samples-bar">
-        <div class="control-group">
-          <div class="group-title">Basic Samples</div>
-          <div class="row">
-            <button id="loadSample1">Basic Graph</button>
-            <button id="loadSample2">Multiple Paths</button>
-            <button id="loadSample3">Negative Weights</button>
-          </div>
-        </div>
-        <div class="control-group">
-          <div class="group-title">Algorithm Showcase</div>
-          <div class="row">
-            <button id="loadSample4">Dijkstra's Best Case</button>
-            <button id="loadSample5">Bellman-Ford's Strength</button>
-            <button id="loadSample6">Tsinghua's Advantage</button>
-          </div>
-          <div class="row">
-            <button id="loadSample7">Dense vs Sparse</button>
-            <button id="loadSample8">Negative Cycle</button>
-          </div>
-        </div>
       </section>
     </main>
 

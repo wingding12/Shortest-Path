@@ -58,24 +58,27 @@ This project aims to provide an educational and interactive platform for underst
    - **Graph Editing Tools**: Buttons to add nodes, add edges, and clear the graph
    - **Algorithm Runners**: Individual buttons for all three algorithms (Bellman-Ford 1956, Dijkstra 1959, Tsinghua 2025), plus a comparison tool
 
-2. **Interactive Canvas** (Center)
+2. **Sample & Results Panel** (Left Sidebar)
+
+   - **Basic Samples**: Simple graphs showcasing different scenarios
+   - **Algorithm Showcase**: Advanced examples highlighting each algorithm's strengths
+   - **Algorithm Results**: Real-time display of path, distance, and performance metrics
+
+3. **Interactive Canvas** (Center)
 
    - **Resizable Graph Area**: Drag the corner to resize the workspace
    - **Visual Node/Edge Representation**: Nodes appear as blue circles with IDs, edges show weights
    - **Path Highlighting**: Shortest paths are highlighted in green when algorithms run
 
-3. **Graph State Panel** (Right Sidebar)
+4. **Graph State Panel** (Right Sidebar)
 
    - **Nodes List**: Shows all nodes with click-to-edit functionality
    - **Edges List**: Displays all edges in "source -[weight]-> target" format
 
-4. **Algorithm Comparison Dock** (Below Controls)
+5. **Algorithm Comparison Dock** (Below Controls)
 
    - **Side-by-Side Results**: Compare algorithm outputs, distances, and performance metrics
    - **Performance Metrics**: Shows relaxations, heap operations, and negative cycle detection
-
-5. **Sample Graphs** (Bottom)
-   - **Pre-built Examples**: Three sample graphs to quickly test different scenarios and algorithm behaviors
 
 ### Sample Graphs
 
