@@ -382,13 +382,32 @@ function getPayload() {
 }
 
 async function postJSON(path, body) {
-  const res = await fetch(path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error("Request failed");
-  return res.json();
+  try {
+    console.log("Making request to:", path);
+    console.log("Request payload:", JSON.stringify(body, null, 2));
+
+    const res = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    console.log("Response status:", res.status);
+    console.log("Response ok:", res.ok);
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Error response body:", errorText);
+      throw new Error(`HTTP ${res.status}: ${errorText}`);
+    }
+
+    const result = await res.json();
+    console.log("Success response:", result);
+    return result;
+  } catch (error) {
+    console.error("Network/Fetch error:", error);
+    throw error;
+  }
 }
 
 // Display algorithm result in the results panel
@@ -696,7 +715,7 @@ function loadSample(sampleIndex) {
   // Clear results display when loading a new sample
   const resultsDisplay = document.getElementById("algorithmResults");
   resultsDisplay.innerHTML =
-    '<p class="help-text">Run an algorithm to see path and metrics here</p>';
+    '<p class="help-text">1. Load a sample graph<br>2. Set source ID (required)<br>3. Run an algorithm to see results</p>';
 
   refreshModeUI();
   redraw();
@@ -758,10 +777,17 @@ runDijkstraBtn.addEventListener("click", async () => {
     selectedAlgo = "dijkstra";
     refreshModeUI();
     const payload = getPayload();
+
+    // Validate inputs
     if (!payload.sourceId) {
-      alert("Set Source ID");
+      displayAlgorithmError("Dijkstra", "Please set a Source ID");
       return;
     }
+    if (!payload.nodes || payload.nodes.length === 0) {
+      displayAlgorithmError("Dijkstra", "Please add some nodes to the graph");
+      return;
+    }
+
     const result = await postJSON("/api/shortest-path/dijkstra", payload);
     highlightedPath = result.path || [];
     displayAlgorithmResult("Dijkstra (1959)", result);
@@ -777,10 +803,20 @@ runBellmanBtn.addEventListener("click", async () => {
     selectedAlgo = "bellman";
     refreshModeUI();
     const payload = getPayload();
+
+    // Validate inputs
     if (!payload.sourceId) {
-      alert("Set Source ID");
+      displayAlgorithmError("Bellman-Ford", "Please set a Source ID");
       return;
     }
+    if (!payload.nodes || payload.nodes.length === 0) {
+      displayAlgorithmError(
+        "Bellman-Ford",
+        "Please add some nodes to the graph"
+      );
+      return;
+    }
+
     const result = await postJSON("/api/shortest-path/bellman-ford", payload);
     highlightedPath = result.path || [];
     displayAlgorithmResult("Bellman-Ford (1956)", result);
@@ -796,10 +832,17 @@ runTsinghuaBtn.addEventListener("click", async () => {
     selectedAlgo = "tsinghua";
     refreshModeUI();
     const payload = getPayload();
+
+    // Validate inputs
     if (!payload.sourceId) {
-      alert("Set Source ID");
+      displayAlgorithmError("Tsinghua", "Please set a Source ID");
       return;
     }
+    if (!payload.nodes || payload.nodes.length === 0) {
+      displayAlgorithmError("Tsinghua", "Please add some nodes to the graph");
+      return;
+    }
+
     const result = await postJSON("/api/shortest-path/tsinghua", payload);
     highlightedPath = result.path || [];
     displayAlgorithmResult("Tsinghua (2025)", result);
@@ -821,7 +864,7 @@ document.getElementById("clearGraph").addEventListener("click", () => {
   // Clear results display
   const resultsDisplay = document.getElementById("algorithmResults");
   resultsDisplay.innerHTML =
-    '<p class="help-text">Run an algorithm to see path and metrics here</p>';
+    '<p class="help-text">1. Load a sample graph<br>2. Set source ID (required)<br>3. Run an algorithm to see results</p>';
 
   refreshModeUI();
   redraw();
