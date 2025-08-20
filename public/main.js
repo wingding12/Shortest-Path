@@ -76,6 +76,18 @@ const runDijkstraBtn = document.getElementById("runDijkstra");
 const runBellmanBtn = document.getElementById("runBellmanFord");
 const runTsinghuaBtn = document.getElementById("runTsinghua");
 
+// Ensure API requests always hit the Express server even if UI is served from another origin
+// Example: if UI is opened via a live server on port 5500, '/api/...' would hit port 5500 and return 405.
+// We detect if we're not on port 3000 and route API calls to http://localhost:3000 explicitly.
+const API_BASE =
+  window.location.port === "3000" ||
+  window.location.origin.includes("localhost:3000")
+    ? ""
+    : "http://localhost:3000";
+function apiPath(path) {
+  return `${API_BASE}${path}`;
+}
+
 function refreshModeUI() {
   addNodeBtn.classList.toggle("mode-active", interactionMode === "addNode");
   addEdgeBtn.classList.toggle("mode-active", interactionMode === "addEdge");
@@ -788,7 +800,10 @@ runDijkstraBtn.addEventListener("click", async () => {
       return;
     }
 
-    const result = await postJSON("/api/shortest-path/dijkstra", payload);
+    const result = await postJSON(
+      apiPath("/api/shortest-path/dijkstra"),
+      payload
+    );
     highlightedPath = result.path || [];
     displayAlgorithmResult("Dijkstra (1959)", result);
     redraw();
@@ -817,7 +832,10 @@ runBellmanBtn.addEventListener("click", async () => {
       return;
     }
 
-    const result = await postJSON("/api/shortest-path/bellman-ford", payload);
+    const result = await postJSON(
+      apiPath("/api/shortest-path/bellman-ford"),
+      payload
+    );
     highlightedPath = result.path || [];
     displayAlgorithmResult("Bellman-Ford (1956)", result);
     redraw();
@@ -843,7 +861,10 @@ runTsinghuaBtn.addEventListener("click", async () => {
       return;
     }
 
-    const result = await postJSON("/api/shortest-path/tsinghua", payload);
+    const result = await postJSON(
+      apiPath("/api/shortest-path/tsinghua"),
+      payload
+    );
     highlightedPath = result.path || [];
     displayAlgorithmResult("Tsinghua (2025)", result);
     redraw();
@@ -877,7 +898,10 @@ document.getElementById("runCompare").addEventListener("click", async () => {
       alert("Set Source ID");
       return;
     }
-    const result = await postJSON("/api/shortest-path/compare", payload);
+    const result = await postJSON(
+      apiPath("/api/shortest-path/compare"),
+      payload
+    );
 
     // Build side-by-side HTML for all three algorithms
     function renderCard(title, data) {
