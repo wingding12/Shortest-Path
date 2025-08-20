@@ -94,6 +94,12 @@ function refreshModeUI() {
   runDijkstraBtn.classList.toggle("algo-active", selectedAlgo === "dijkstra");
   runBellmanBtn.classList.toggle("algo-active", selectedAlgo === "bellman");
   runTsinghuaBtn.classList.toggle("algo-active", selectedAlgo === "tsinghua");
+  // Disable Tsinghua on graphs with negative edges (algorithm assumes non-negative weights)
+  const hasNegative = edges.some((e) => Number(e.weight) < 0);
+  runTsinghuaBtn.disabled = hasNegative;
+  runTsinghuaBtn.title = hasNegative
+    ? "Tsinghua SSSP requires non-negative edge weights"
+    : "Run Tsinghua (2025)";
 }
 
 function removeDialogDeleteButtonIfAny() {
@@ -722,6 +728,77 @@ function loadSample(sampleIndex) {
     );
     document.getElementById("sourceId").value = "S";
     document.getElementById("targetId").value = "T";
+  } else if (sampleIndex === 9) {
+    // Tsinghua: Long Sparse Ladder (non-negative, very sparse, long diameter)
+    nodes.length = 0;
+    edges.length = 0;
+    const N = 14;
+    for (let i = 0; i < N; i++) {
+      nodes.push({
+        id: `L${i}`,
+        x: 100 + i * 40,
+        y: 200 + (i % 2 === 0 ? -30 : 30),
+      });
+    }
+    for (let i = 0; i < N - 1; i++) {
+      edges.push({ source: `L${i}`, target: `L${i + 1}`, weight: 1 });
+    }
+    // Add very few shortcuts
+    edges.push({ source: "L0", target: "L3", weight: 4 });
+    edges.push({ source: "L5", target: "L9", weight: 6 });
+    document.getElementById("sourceId").value = "L0";
+    document.getElementById("targetId").value = "L13";
+  } else if (sampleIndex === 10) {
+    // Tsinghua: Layered DAG (sparse) - minimal inter-layer edges
+    nodes.length = 0;
+    edges.length = 0;
+    const layers = 5;
+    const perLayer = 3;
+    for (let i = 0; i < layers; i++) {
+      for (let j = 0; j < perLayer; j++) {
+        nodes.push({ id: `N${i}_${j}`, x: 100 + i * 120, y: 120 + j * 80 });
+      }
+    }
+    for (let i = 0; i < layers - 1; i++) {
+      edges.push({ source: `N${i}_0`, target: `N${i + 1}_0`, weight: 2 });
+      edges.push({ source: `N${i}_1`, target: `N${i + 1}_1`, weight: 2 });
+      edges.push({ source: `N${i}_2`, target: `N${i + 1}_2`, weight: 2 });
+      // few cross links
+      edges.push({ source: `N${i}_0`, target: `N${i + 1}_1`, weight: 3 });
+      edges.push({ source: `N${i}_1`, target: `N${i + 1}_2`, weight: 3 });
+    }
+    document.getElementById("sourceId").value = "N0_0";
+    document.getElementById("targetId").value = `N${layers - 1}_2`;
+  } else if (sampleIndex === 11) {
+    // Tsinghua: Sparse Wide Grid (non-negative, few edges relative to nodes)
+    nodes.length = 0;
+    edges.length = 0;
+    const rows = 3;
+    const cols = 8;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        nodes.push({ id: `G${r}_${c}`, x: 80 + c * 70, y: 120 + r * 90 });
+      }
+    }
+    // Horizontal edges but not all cells connected (sparse)
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols - 1; c++) {
+        if ((r + c) % 2 === 0) {
+          edges.push({
+            source: `G${r}_${c}`,
+            target: `G${r}_${c + 1}`,
+            weight: 1,
+          });
+        }
+      }
+    }
+    // A few vertical connectors
+    for (let c = 1; c < cols; c += 3) {
+      edges.push({ source: `G0_${c}`, target: `G1_${c}`, weight: 2 });
+      edges.push({ source: `G1_${c}`, target: `G2_${c}`, weight: 2 });
+    }
+    document.getElementById("sourceId").value = "G0_0";
+    document.getElementById("targetId").value = `G2_${cols - 1}`;
   }
 
   // Clear results display when loading a new sample
@@ -760,6 +837,17 @@ document
 document
   .getElementById("loadSample8")
   .addEventListener("click", () => loadSample(8));
+
+// Tsinghua showcase samples
+document
+  .getElementById("loadSample9")
+  .addEventListener("click", () => loadSample(9));
+document
+  .getElementById("loadSample10")
+  .addEventListener("click", () => loadSample(10));
+document
+  .getElementById("loadSample11")
+  .addEventListener("click", () => loadSample(11));
 
 // Buttons (toggle modes)
 addNodeBtn.addEventListener("click", () => {

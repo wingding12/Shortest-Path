@@ -1,20 +1,26 @@
 // Tsinghua SSSP Algorithm (2025)
-// Breakthrough algorithm by Duan Ran's team at Tsinghua University
-// Achieves O(m log^(2/3) n) time complexity, improving upon Dijkstra's O(m + n log n)
-// This implementation captures the key innovations while maintaining educational clarity
+// Deterministic near-linear-time SSSP for directed graphs with non-negative weights
+// by Duan Ran (Tsinghua) et al. The actual paper is highly sophisticated; this
+// implementation is a faithful educational approximation that enforces the core
+// constraints (non-negative weights) and mirrors the high-level strategy:
+//  - Recursive partial ordering of the frontier
+//  - Pivot-guided clustering to avoid full sorting
+//  - Monotone relaxation respecting partition order
 
 function runTsinghua({ nodes, edges, sourceId, targetId }) {
   const numNodes = nodes.length;
   const idToIndex = new Map(nodes.map((n, i) => [n.id, i]));
   const adjacency = Array.from({ length: numNodes }, () => []);
 
-  // Build adjacency list
+  // Build adjacency list; enforce non-negative weights
   for (const e of edges) {
     const u = idToIndex.get(e.source);
     const v = idToIndex.get(e.target);
     if (u === undefined || v === undefined) continue;
     const w = Number(e.weight);
-    if (w < 0) continue; // Tsinghua algorithm requires non-negative weights
+    if (w < 0) {
+      throw new Error("Tsinghua SSSP requires non-negative edge weights");
+    }
     adjacency[u].push({ v, w });
   }
 
@@ -35,8 +41,8 @@ function runTsinghua({ nodes, edges, sourceId, targetId }) {
   let pivotSelections = 0;
   let recursivePartitions = 0;
 
-  // Tsinghua Algorithm Innovation: Recursive Partial Ordering with Pivots
-  // This avoids the full sorting overhead of traditional priority queues
+  // Recursive Partial Ordering with Pivots
+  // Avoids full sorting of the entire frontier
 
   function tsinghuaSSP(frontier, level = 0) {
     recursivePartitions++;
@@ -47,20 +53,22 @@ function runTsinghua({ nodes, edges, sourceId, targetId }) {
       if (processed[u]) return;
       processed[u] = true;
 
-      // Process all neighbors
+      // Process all neighbors and build next frontier
+      const nextFrontier = [];
       for (const { v, w } of adjacency[u]) {
         const candidate = dist[u] + w;
         if (candidate < dist[v]) {
           dist[v] = candidate;
           parent[v] = u;
           relaxations++;
+          if (!processed[v]) nextFrontier.push(v);
         }
       }
+      if (nextFrontier.length > 0) tsinghuaSSP(nextFrontier, level + 1);
       return;
     }
 
-    // Innovation 1: Pivot Selection Strategy
-    // Select representative nodes to guide partial ordering
+    // Pivot Selection Strategy: select O(|F|^{2/3}) representatives
     const pivotCount = Math.max(
       1,
       Math.floor(Math.pow(frontier.length, 2 / 3))
@@ -68,8 +76,7 @@ function runTsinghua({ nodes, edges, sourceId, targetId }) {
     const pivots = selectPivots(frontier, pivotCount);
     pivotSelections++;
 
-    // Innovation 2: Cluster-based Processing
-    // Group frontier nodes around pivots to avoid full sorting
+    // Cluster-based Processing: group nodes by closest pivot distance
     const clusters = clusterAroundPivots(frontier, pivots);
 
     // Process clusters in distance order
@@ -197,14 +204,9 @@ function runTsinghua({ nodes, edges, sourceId, targetId }) {
       relaxations,
       pivotSelections,
       recursivePartitions,
-      theoreticalComplexity: "O(m log^(2/3) n)",
+      theoreticalComplexity: "~O(m log^{2/3} n) (educational approximation)",
     },
     algorithm: "Tsinghua SSSP (2025)",
-    innovations: [
-      "Recursive partial ordering",
-      "Pivot-based clustering",
-      "Avoids full priority queue sorting",
-    ],
   };
 }
 
